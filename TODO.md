@@ -1,0 +1,2 @@
+- Enlever les valeurs abérantes villes
+- Voir le cas de Nancy, corrélation cheloue
