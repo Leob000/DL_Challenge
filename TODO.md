@@ -13,6 +13,8 @@ Feature engineering:
 
 Global:
 - Réfléchir quel modèle faire, quoi et comment modéliser
+- FiLM modèle?
+- Voir avec chatGPT pour des architectures qui pourraient marcher
 
 - ARIMA
 - ARMA
