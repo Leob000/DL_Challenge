@@ -10,6 +10,7 @@ Feature engineering:
 - Daylight savings
 - Holidays, Férié, Aout
 - Trend
+tsdf
 
 Global:
 - Réfléchir quel modèle faire, quoi et comment modéliser
