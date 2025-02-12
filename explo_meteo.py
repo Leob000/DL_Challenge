@@ -1,9 +1,7 @@
 # %%
-import contextily as ctx
-import geopandas as gpd
 import matplotlib.pyplot as plt
 import pandas as pd
-import shapely.geometry
+import utils
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -44,69 +42,28 @@ geo_details = df.groupby(["nom_reg", "nom_dept"])["numer_sta"].value_counts()
 geo_details
 # %%
 # Affichage sur carte des stations et villes à pred
+# On remarque que toutes les villes ont une station proche, sauf Grenoble
+# On pourra donc pour la construction du modèle lier les données météo de chaque station
+# à la ville correspondante, sauf pour Grenoble pour laquelle on peut faire la moyenne
+# des trois stations
+
 # On prends les longitudes/latitudes des stations
 df[["longitude", "latitude"]].round(9).value_counts()
 location_counts = df[["longitude", "latitude"]].round(9).value_counts()
 longi_stations = location_counts.index.get_level_values("longitude").tolist()
 lat_stations = location_counts.index.get_level_values("latitude").tolist()
+tuple_stations = (longi_stations, lat_stations)
 
 # Idem pour les villes
 villes_loc = pd.read_csv("data/villes_loc.csv")
-longi_villes = villes_loc["Longitude"]
-lat_villes = villes_loc["Latitude"]
+tuple_villes = (villes_loc["Longitude"], villes_loc["Latitude"], villes_loc["Ville"])
 
+# Voir la fonction pour afficher sur la carte dans utils.py
+utils.plot_france_map(tuple_stations, tuple_villes)
 
-# Transformation pour affichage
-def gdf_transfo(longi, lat):
-  gdf = pd.DataFrame()
-  gdf["longitudes"] = longi
-  gdf["latitudes"] = lat
-  gdf["geometry"] = gpd.points_from_xy(gdf["longitudes"], gdf["latitudes"])
-  gdf = gpd.GeoDataFrame(gdf, crs="epsg:4326").to_crs("EPSG:3857")
-  return gdf
-
-
-# def carte_france():
-gdf_stations = gdf_transfo(longi_stations, lat_stations)
-gdf_villes = gdf_transfo(longi_villes, lat_villes)
-
-url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
-world = gpd.read_file(url)
-
-france = world[world["ADMIN"] == "France"]
-france = (
-  france["geometry"]
-  .apply(
-    lambda mp: shapely.geometry.MultiPolygon([p for p in mp.geoms if p.bounds[1] > 20])
-  )
-  .to_crs("EPSG:3857")
-)
-fig, ax = plt.subplots(figsize=(15, 10))
-
-# Plot le pays
-ax = france.boundary.plot(color="black", linewidth=0.5, alpha=0, ax=ax)
-# part1 = shapely.geometry.LineString(gdf_stations["geometry"].values)
-# linegdf = gpd.GeoDataFrame({"geometry": [part1]})
-
-# Plot les stations
-gdf_stations.plot(
-  ax=ax,
-  markersize=50,
-  edgecolor="black",
-  linewidth=0.5,
-  zorder=1000,
-)
-# Plot les villes
-gdf_villes.plot(
-  ax=ax,
-  markersize=50,
-  edgecolor="black",
-  linewidth=0.5,
-  zorder=1001,  # force the points to be the top layer of the plot
-)
-ctx.add_basemap(ax=ax)
-ax.set_axis_off()
-plt.show()
+# %%
+# TODO: distance euclidienne pour chaque ville aux stations, trouver la station la
+# plus proche (département), pour Grenoble les 3 plus proches
 
 # %%
 # S'occuper de temps_present / passe et ww / w1 / w2

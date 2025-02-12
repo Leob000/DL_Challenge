@@ -24,7 +24,7 @@ test3 = test2.reindex(test2.index.union(missing_indices))
 test3
 # %%
 # Simplification des noms de colonnes
-df.rename(
+df = df.rename(
   columns={
     "Auvergne-Rhône-Alpes": "ARA",
     "Bourgogne-Franche-Comté": "BFC",
@@ -48,7 +48,6 @@ df.rename(
     "Nantes Métropole": "Nantes",
     "Toulouse Métropole": "Toulouse",
   },
-  inplace=True,
 )
 regions = list(df.columns)[1:13]
 villes = list(df.columns)[13:]
