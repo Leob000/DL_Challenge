@@ -80,7 +80,7 @@ france = (
   )
   .to_crs("EPSG:3857")
 )
-fig, ax = plt.subplots(figsize=(4, 5))
+fig, ax = plt.subplots(figsize=(15, 10))
 
 # Plot le pays
 ax = france.boundary.plot(color="black", linewidth=0.5, alpha=0, ax=ax)
@@ -90,7 +90,8 @@ linegdf = gpd.GeoDataFrame({"geometry": [part1]})
 # Plot les stations
 gdf_stations.plot(
   ax=ax,
-  markersize=15,
+  markersize=40,
+  color="blue",
   edgecolor="black",
   linewidth=0.5,
   zorder=1000,
@@ -98,7 +99,7 @@ gdf_stations.plot(
 # Plot les villes
 gdf_villes.plot(
   ax=ax,
-  markersize=10,
+  markersize=40,
   color="red",
   edgecolor="black",
   linewidth=0.5,
