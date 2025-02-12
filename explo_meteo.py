@@ -66,6 +66,7 @@ def gdf_transfo(longi, lat):
   return gdf
 
 
+# def carte_france():
 gdf_stations = gdf_transfo(longi_stations, lat_stations)
 gdf_villes = gdf_transfo(longi_villes, lat_villes)
 
@@ -84,14 +85,13 @@ fig, ax = plt.subplots(figsize=(15, 10))
 
 # Plot le pays
 ax = france.boundary.plot(color="black", linewidth=0.5, alpha=0, ax=ax)
-part1 = shapely.geometry.LineString(gdf_stations["geometry"].values)
-linegdf = gpd.GeoDataFrame({"geometry": [part1]})
+# part1 = shapely.geometry.LineString(gdf_stations["geometry"].values)
+# linegdf = gpd.GeoDataFrame({"geometry": [part1]})
 
 # Plot les stations
 gdf_stations.plot(
   ax=ax,
-  markersize=40,
-  color="blue",
+  markersize=50,
   edgecolor="black",
   linewidth=0.5,
   zorder=1000,
@@ -99,45 +99,13 @@ gdf_stations.plot(
 # Plot les villes
 gdf_villes.plot(
   ax=ax,
-  markersize=40,
-  color="red",
+  markersize=50,
   edgecolor="black",
   linewidth=0.5,
   zorder=1001,  # force the points to be the top layer of the plot
 )
 ctx.add_basemap(ax=ax)
 ax.set_axis_off()
-plt.show()
-# %%
-# Load the map of France
-world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
-france = world[world.name == "France"]
-
-# Create a GeoDataFrame with the longitude and latitude values
-gdf_stations = gpd.GeoDataFrame(
-  geometry=gpd.points_from_xy(longi_stations, lat_stations)
-)
-
-# Plot the map of France
-fig, ax = plt.subplots(figsize=(10, 10))
-france.plot(ax=ax, color="white", edgecolor="black")
-gdf_stations.plot(ax=ax, color="red", markersize=5)
-plt.title("Scatter Plot of Longitude and Latitude on Map of France")
-plt.xlabel("Longitude")
-plt.ylabel("Latitude")
-plt.show()
-
-
-# %%
-# longi = [-73.935242, -118.243683, -0.127758]
-# lat = [40.730610, 34.052235, 51.507351]
-
-# plt.figure(figsize=(8, 6))
-plt.scatter(longi_stations, lat_stations, color="red")
-plt.title("Scatter Plot of Longitude and Latitude")
-plt.xlabel("Longitude")
-plt.ylabel("Latitude")
-plt.grid(True)
 plt.show()
 
 # %%
