@@ -2,32 +2,23 @@
 
 ## Frame the problem and look at the big picture  
 1. Define the objective in business terms.  
-<!-- - Predict Load or Net_demand ?
-- Load : Conso d'électrécité
-- Net demand : Conso d'électrécité - Production locale (panneaux solaires, ...) -> plus faible que Load
-- Train sur les données de "2013-03-02" à "2022-09-01", test de "2022-09-02" à "2023-10-01", donc période spéciale de sobriété
-    - Intérêt fort de prévoir la demande durant cette période à cause des prix très élevés
-    - Période de sobriété énergique à cause de différents facteurs (guerre en Ukraine, réparations centrales nucléaires)
-    - Plan de sobriété national présenté le 6 octobre 2022 et effectif à partir de juin 2022, voir [lien du gouvernement ](https://www.ecologie.gouv.fr/actualites/sobriete-energetique-plan-reduire-notre-consommation-denergie).
-    - Objectif du gouvernement de réduction de 10% de la consommation d'énergie sur 2 ans (à partir du plan) par rapport à 2019 -->
+- Predict electricity conso for France, its 12 regions, 12 city groups for the year 2022
+- Plan de sobriété national présenté en 2022-06, effectif 2022-10 -> Sous-estimer exprès le modèle ?
 
-2. How will your solution be used?  
-3. What are the current solutions/workarounds (if any)?  
-4. How should you frame this problem (supervised/unsupervised, online/offline, etc.)  
-<!-- - Supervised, offline -->
+<!-- 2. How will your solution be used?   -->
+<!-- 3. What are the current solutions/workarounds (if any)?   -->
+<!-- 4. How should you frame this problem (supervised/unsupervised, online/offline, etc.)  
+- Supervised, offline -->
 5. How should performance be measured?  
-<!-- - Pinball loss quantile 0.8
-- Grosse erreur si on sous-estime la pred, plus petite si on sur-estime
-- Donc revient à estimer le quantile 0.8 -->
-6. Is the performance measure aligned with the business objective?  
-<!-- - Oui, car gros problème si on ne parvient pas à répondre à la demande (amendes, blackout, prix d'achat très élevé à l'étranger car tout le monde dans la galère?), moins gros si on a juste de l'électricité en trop (juste moins bonne optimisation ?) -->
-7. What would be the minimum performance needed to reach the business objective?  
-8. What are comparable problems? Can you reuse experience or tools?  
-9. Is human expertise available?  
+- RMSE
+<!-- 6. Is the performance measure aligned with the business objective?   -->
+<!-- 7. What would be the minimum performance needed to reach the business objective?   -->
+<!-- 8. What are comparable problems? Can you reuse experience or tools?   -->
+<!-- 9. Is human expertise available?   -->
 10. How would you solve the problem manually?  
-- Moyennes des conso des moments des années précédentes + réserve pour réduire le risque de ne pas pouvoir répondre à la demande
-11. List the assumptions you or others have made so far.  
-12. Verify assumptions if possible.  
+- Moyenne du même jour des années précédentes et de la conso de la veille
+<!-- 11. List the assumptions you or others have made so far.   -->
+<!-- 12. Verify assumptions if possible.   -->
 
 ## Get the data   
 Note: automate as much as possible so you can easily get fresh data.  

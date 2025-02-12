@@ -1,10 +1,18 @@
-Treatment:
-- Débruitage Nancy/Nice au lieu d'enlever? Pour Nancy, possible d'implémanter dans la loss un seuil pour moins prendre en compte les données bruitées/non bruitées?
-- Sinon possible de faire un modèle descendant, France -> Régions -> Villes, et donc train les villes à la fin juste à partir de la période où les données sont présentes
-- Enlever les valeurs abérantes villes
-- Voir le cas de Nancy, corrélation cheloue
-- Date format en UTC? format FR?
-- Voir comment traiter les NaN -> Faire un modèle pour deviner les NaN des villes, avec notamment les données météo?
+# Explo
+- Traiter l'index
+- Traitrer les NaN faibles
+- Date format UTC? autre?
+- Faire checklist Handson
+- Traitement des données météo
+    - Liens stations-villes, stations-régions, stations-France
+
+Pré-modèle
+
+# Modèle
+- Nancy/Autres: implémanter dans la loss un poids pour prendre plus en compte les données récentes?
+- Pour les prédictions, voir sur public score si meilleur en reshiftant ou non Nice
+- Modèle NN descendant France -> Régions -> Villes, train les villes à partir du début de leur données
+
 
 Feature engineering:
 - Lagged values 1, 7 -> Ou onehotencoding days of week, months, ... check avec gpt vs lagged values, fourrier stuff...

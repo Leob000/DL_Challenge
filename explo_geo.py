@@ -11,7 +11,16 @@ OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 # %%
 df = pd.read_csv("data/train.csv", index_col="date")
 df.index = pd.to_datetime(df.index, utc=True)
-
+# %%
+# TODO clean ça
+test2 = df.loc[(df.index >= "2018-10-27") & (df.index <= "2018-10-29"), :]
+test2
+# Add missing indices
+missing_indices = pd.date_range(
+  start="2018-10-28 00:00:00+00:00", end="2018-10-28 00:30:00+00:00", freq="30T"
+)
+test3 = test2.reindex(test2.index.union(missing_indices))
+test3
 # %%
 # Simplification des noms de colonnes
 df.rename(
@@ -168,6 +177,9 @@ if OPTION_FULL_ANALYSIS:
 msno.matrix(df)
 plt.show()
 
+# %%
+test = df.loc[(df.index >= "2018-10-25") & (df.index <= "2018-10-30"), "Montpellier"]
+test
 # %%
 # On remplace chaque NaN non consécutif avec la moyenne entre t-1 et t+1
 city = "Montpellier"
