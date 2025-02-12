@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import utils
+from scipy.spatial import distance
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -64,7 +65,37 @@ utils.plot_france_map(tuple_stations, tuple_villes)
 # %%
 # TODO: distance euclidienne pour chaque ville aux stations, trouver la station la
 # plus proche (département), pour Grenoble les 3 plus proches
+# Calculate the Euclidean distance between each city and each station
+distances = []
+for _, ville in villes_loc.iterrows():
+  ville_coords = (ville["Latitude"], ville["Longitude"])
+  for lat, long in zip(lat_stations, longi_stations):
+    station_coords = (lat, long)
+    dist = distance.euclidean(ville_coords, station_coords)
+    nom_dept = df.loc[
+      (df["latitude"] == lat) & (df["longitude"] == long), "nom_dept"
+    ].values[0]
+    distances.append((ville["Ville"], station_coords, dist, nom_dept))
 
+# Find the closest station for each city
+closest_stations = {}
+for ville in villes_loc["Ville"].unique():
+  ville_distances = [d for d in distances if d[0] == ville]
+  closest_station = min(ville_distances, key=lambda x: x[2])
+  closest_stations[ville] = closest_station
+
+# Special case for Grenoble: find the three closest stations
+grenoble_distances = [d for d in distances if d[0] == "Grenoble"]
+three_closest_stations = sorted(grenoble_distances, key=lambda x: x[2])[:3]
+closest_stations["Grenoble"] = three_closest_stations
+
+closest_stations["Paris"][3]
+for ville, station_info in closest_stations.items():
+  if ville == "Grenoble":
+    for station in station_info:
+      print(ville, ":", station[3])
+  else:
+    print(ville, ":", station_info[3])
 # %%
 # S'occuper de temps_present / passe et ww / w1 / w2
 # Vraiment pas bcp de w1, w2 donc tout drop sauf temps présent
