@@ -1,7 +1,8 @@
 # %%
 import matplotlib.pyplot as plt
-import pandas as pd
 import missingno as msno
+import pandas as pd
+
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
