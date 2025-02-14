@@ -1,4 +1,5 @@
 # %%
+import missingno as msno
 import pandas as pd
 import utils
 from scipy.spatial import distance
@@ -83,42 +84,28 @@ cols_to_keep = [
   "n",  # nébulosité, mais bcp de NaN
   "nbas",  # nébulosité basse, bcp moins de NaN que n
   "raf10",  # rafales sur les 10mn
-  "rafper",  # rafales sur la période TODO comment ça la période? variable per?
+]
+cols_geo = [
+  "altitude",  # ?
+  "latitude",
+  "longitude",
+  "nom_dept",
+  "nom_reg",
+]
+cols_doubt = [
   "ht_neige",  # garder?
   "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
-  # mettre les var géo
+  "rafper",  # rafales sur la période? du coup avoir per aussi?
 ]
+df = df[cols_to_keep + cols_geo]
+df.isna().mean().sort_values()
 # %%
-# Drop les colonnes géo redondantes; on garde le nom_dept, nom_region
-# Drop des autres colonnes inutiles, trop de NaN, infos pas vraiment pertinentes
-# ou redondantes (température, localisations, ...)
-dftest = df.drop(
-  columns=[
-    "numer_sta",
-    "coordonnees",
-    "nom",
-    "libgeo",
-    "codegeo",
-    "code_epci",
-    "code_dep",
-    "code_reg",
-    "nom_epci",
-    "mois_de_l_annee",
-    "t",  # redondant tc
-    "tminsol",  # redondant
-    "etat_sol",  # inutile
-    "ht_neige",  # redondant?
-    "type_de_tendance_barometrique",  # long string, redondant
-    "temps_present",  # long string, redondant
-  ]
-)
-print(dftest.columns)
+# n semble utile intuitivement mais 50% de NaN
+# nbas aussi mais 19% NaN
+# TODO Gérer ces NaN
+msno.matrix(df.loc[:, df.isna().mean() > 0])
 # %%
-# S'occuper de temps_present / passe et ww / w1 / w2
-# Vraiment pas bcp de w1, w2 donc tout drop sauf temps présent
-col = ["ww", "w1", "w2", "temps_passe_1"]
-df.drop(columns=col, inplace=True)
-df.head()
 
+# %%
 # TODO Créer fonction tweak_meteo
 # TODO Voir la dernière cellule, check les colonnes de la df grader que les utiles
