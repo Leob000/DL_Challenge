@@ -5,6 +5,7 @@
 - Faire checklist Handson
 - Traitement des données météo
     - Liens stations-villes, stations-régions, stations-France
+- Loss pour prendre en compte NaN ?
 
 Pré-modèle
 

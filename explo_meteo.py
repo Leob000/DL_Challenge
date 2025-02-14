@@ -1,5 +1,4 @@
 # %%
-import matplotlib.pyplot as plt
 import pandas as pd
 import utils
 from scipy.spatial import distance
@@ -9,10 +8,6 @@ df = pd.read_parquet("data/meteo.parquet")
 df.set_index("date", inplace=True)
 df.index = pd.to_datetime(df.index, utc=True)
 
-# %%
-# On drop les colones avec beaucoup de NaN
-print(df.isna().mean().sort_values(ascending=False))
-df = df.drop(columns=df.columns[df.isna().mean() > 0.5].tolist())
 
 # %%
 df.columns
@@ -73,15 +68,31 @@ for ville, station_info in closest_stations.items():
     print(ville, ":", station_info[3])
 
 # %%
-df.columns
-col = [
-  "type_de_tendance_barometrique",
+# On peut étudier le nombre de NaN pour chaque feature
+nan = df.isna().mean().sort_index()
+nan
+# df = df.drop(columns=df.columns[df.isna().mean() > 0.5].tolist())
+
+# %%
+cols_to_keep = [
+  "dd",  # direction du vent 10mn
+  "ff",  # vitesse vent 10mn
+  "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
+  "u",  # humidité
+  "temps_present",  # descri temps
+  "n",  # nébulosité, mais bcp de NaN
+  "nbas",  # nébulosité basse, bcp moins de NaN que n
+  "raf10",  # rafales sur les 10mn
+  "rafper",  # rafales sur la période TODO comment ça la période? variable per?
+  "ht_neige",  # garder?
+  "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
+  # mettre les var géo
 ]
 # %%
 # Drop les colonnes géo redondantes; on garde le nom_dept, nom_region
 # Drop des autres colonnes inutiles, trop de NaN, infos pas vraiment pertinentes
 # ou redondantes (température, localisations, ...)
-df = df.drop(
+dftest = df.drop(
   columns=[
     "numer_sta",
     "coordonnees",
@@ -93,10 +104,15 @@ df = df.drop(
     "code_reg",
     "nom_epci",
     "mois_de_l_annee",
-    "t",
-    "tminsol",
+    "t",  # redondant tc
+    "tminsol",  # redondant
+    "etat_sol",  # inutile
+    "ht_neige",  # redondant?
+    "type_de_tendance_barometrique",  # long string, redondant
+    "temps_present",  # long string, redondant
   ]
 )
+print(dftest.columns)
 # %%
 # S'occuper de temps_present / passe et ww / w1 / w2
 # Vraiment pas bcp de w1, w2 donc tout drop sauf temps présent
