@@ -5,7 +5,7 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-OPTION_FULL_ANALYSIS = True  # Analyse complète ou non
+OPTION_FULL_ANALYSIS = False  # Analyse complète ou non
 OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 
 # %%
@@ -103,13 +103,13 @@ if OPTION_NICE_SHIFT:  # Shifting à la main des mauvaises données
     df = dftest.copy()
     df["Nice"].plot()
     plt.show()
-else:  # Elimination de ces données
-    df["Nice"].plot()
-    plt.axvline(pd.Timestamp("2021-08-01"), color="r", linestyle="--")
-    df = df.assign(
-        Nice=lambda x: x["Nice"].where(x.index <= "2021-08-01", float("nan"))
-    )
-    df["Nice"].plot()
+# else:  # Elimination de ces données
+#     df["Nice"].plot()
+#     plt.axvline(pd.Timestamp("2021-08-01"), color="r", linestyle="--")
+#     df = df.assign(
+#         Nice=lambda x: x["Nice"].where(x.index <= "2021-08-01", float("nan"))
+#     )
+#     df["Nice"].plot()
 # %%
 # Beaucoups de valeurs aberrantes pour les villes,
 # on les cherche une par une puis les élimine
@@ -181,6 +181,9 @@ msno.matrix(df)
 # On interpole les NaN mineurs
 df = df.interpolate(method="time", limit_area="inside")
 msno.matrix(df)
+
+# %%
+
 
 # %%
 # Enregistrement des données traitées
