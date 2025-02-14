@@ -70,42 +70,57 @@ for ville, station_info in closest_stations.items():
 
 # %%
 # On peut étudier le nombre de NaN pour chaque feature
-nan = df.isna().mean().sort_index()
-nan
-# df = df.drop(columns=df.columns[df.isna().mean() > 0.5].tolist())
+pd.set_option("display.max_rows", 500)
+df.isna().mean().sort_index()
 
 # %%
-cols_to_keep = [
-  "dd",  # direction du vent 10mn
+# On choisit ici les variables à garder, on va tester d'abord des modèles avec les variables essentielles
+# Les variables essentielles:
+cols_essential = [
   "ff",  # vitesse vent 10mn
   "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
   "u",  # humidité
-  "temps_present",  # descri temps
-  "n",  # nébulosité, mais bcp de NaN
-  "nbas",  # nébulosité basse, bcp moins de NaN que n
-  "raf10",  # rafales sur les 10mn
+]
+# Les variables potentiellement utiles:
+cols_doubt = [
+  "dd",  # direction du vent 10mn
+  "temps_present",  # descri temps, idem que ww
+  "n",  # utile mais bcp de NaN
+  "nbas",  # idem, moins de NaN que n
+  "ht_neige",  # garder?
+  "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
+  "raf10",  # rafales sur les 10mn, très corrélé avec ff, avec un peu plus de NaN
+  "rafper",  # rafales sur la période? du coup avoir per aussi?
 ]
 cols_geo = [
-  "altitude",  # ?
-  "latitude",
-  "longitude",
+  "altitude",
+  # "latitude",
+  # "longitude",
   "nom_dept",
   "nom_reg",
 ]
-cols_doubt = [
-  "ht_neige",  # garder?
-  "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
-  "rafper",  # rafales sur la période? du coup avoir per aussi?
-]
-df = df[cols_to_keep + cols_geo]
+df = df[cols_essential + cols_geo]
 df.isna().mean().sort_values()
 # %%
-# n semble utile intuitivement mais 50% de NaN
-# nbas aussi mais 19% NaN
-# TODO Gérer ces NaN
+# On étudie comment sont répartis les NaN
 msno.matrix(df.loc[:, df.isna().mean() > 0])
+# df[cols_to_keep].corr().style.background_gradient(cmap="coolwarm").format(precision=2)
 # %%
+# Vent, temp et humidité par département
+df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
+# %%
+# Nombre de NaN par variable, par département
+df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
+
+# %%
+# TODO Remplir les NaN consécutifs en faisant une moyenne t+1, t-1
+list_dept = df["nom_dept"].unique().tolist()
+for dept in list_dept:
+  pass
+
+df[df["nom_dept"] == "Manche"].sort_index().tail()
+# %%
+# TODO Décider comment matcher le timing 30min et 3h
 
 # %%
 # TODO Créer fonction tweak_meteo
-# TODO Voir la dernière cellule, check les colonnes de la df grader que les utiles
