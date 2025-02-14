@@ -12,12 +12,6 @@ OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 df = pd.read_csv("data/train.csv", index_col="date")
 df.index = pd.to_datetime(df.index, utc=True)
 # %%
-# Il manque certains indices, on les crée
-missing_indices = pd.date_range(
-  start="2018-10-28 00:00:00+00:00", end="2018-10-28 00:30:00+00:00", freq="30min"
-)
-df = df.reindex(df.index.union(missing_indices))
-# %%
 # Simplification des noms de colonnes
 df = df.rename(
   columns={
@@ -167,66 +161,22 @@ if OPTION_FULL_ANALYSIS:
   plt.show()
 
 # %%
+# Il manque des dates pour les indices, on les ajoute
+full_index = pd.date_range(
+  start=df.index.min(), end=df.index.max(), freq="30min", tz="UTC"
+)
+missing_dates = full_index.difference(df.index)
+print(missing_dates)
+
+df = df.reindex(full_index)
+# %%
 # 2 types de valeurs manquantes, soit globalement communes à toutes les villes
 # soit manque du début ~2017 différent pour chaque ville
 msno.matrix(df)
-plt.show()
-
 # %%
-test = df.loc[(df.index >= "2018-10-25") & (df.index <= "2018-10-30"), "Montpellier"]
-test
-# %%
-# On remplace chaque NaN non consécutif avec la moyenne entre t-1 et t+1
-city = "Montpellier"
-nan_dates = df[df[city].isna()].index
-non_consecutive_nan_dates = nan_dates[
-  nan_dates.to_series().diff() != pd.Timedelta("30 minutes")
-]
-# On enlève le premier jour sinon bug
-non_consecutive_nan_dates = non_consecutive_nan_dates[1:]
-non_consecutive_nan_dates
-
-for date in non_consecutive_nan_dates:
-  before = df.loc[date - pd.DateOffset(minutes=30), city]
-  after = df.loc[date + pd.DateOffset(minutes=30), city]
-  df.at[date, city] = (before + after) / 2
-
-msno.matrix(df[city])
-plt.show()
-
-# %%
-# Check for non-consecutive NaN values for a specific city
-city = "Montpellier"
-nan_dates = df[df[city].isna()].index
-non_consecutive_nan_dates = nan_dates[
-  nan_dates.to_series().diff() != pd.Timedelta("30 minutes")
-]
-non_consecutive_nan_dates = non_consecutive_nan_dates[
-  1:
-]  # On enlève le premier jour du dataset
-print(non_consecutive_nan_dates)
-
-for date in non_consecutive_nan_dates:
-  trente_min = pd.DateOffset(minutes=30)
-  # print(type(date))
-  # print(type(trente_min))
-  # print(type(date - trente_min))
-  before = df.loc[date - trente_min, city]
-  after = df[city].loc[date + pd.DateOffset(minutes=30)]
-  df.at[date, city] = (before + after) / 2
-
-# %%
-# Coupure jusque 2017-10-23 07:00:00+00:00 ? Pour toutes les villes
-pd.DataFrame(df[(df.index.year) & (df["Montpellier"].isna())].index)
-
-# %%
-# Etude des NaN communs aux villes, sont ils exactement la même date? consécutifs?
-villes_no_nancy = villes.copy()
-villes_no_nancy.remove("Nancy")
-
-# msno.matrix(df.loc[(df.index >= "2018") & (df.index <= "2019"), villes])
-df.loc[(df.index >= "2018") & (df.index <= "2019"), villes].isna().mean()
-# df[(df.index.year > 2017) & (df[villes_no_nancy].isna())].index
+# On interpole les NaN mineurs
+dftest = df.interpolate(method="time", limit_area="inside")
+msno.matrix(dftest)
 
 # %%
 # Fonction pour appliquer toutes les transformations faites dans ce notebook
