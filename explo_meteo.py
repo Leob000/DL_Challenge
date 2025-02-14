@@ -44,30 +44,32 @@ utils.plot_france_map(tuple_stations, tuple_villes)
 # Distance euclidienne pour chaque ville aux stations, on trouve la station la
 # plus proche (1 par département), pour Grenoble les 3 plus proches
 distances = [
-  (
-    ville["Ville"],
-    (lat, long),
-    distance.euclidean((ville["Latitude"], ville["Longitude"]), (lat, long)),
-    df.loc[(df["latitude"] == lat) & (df["longitude"] == long), "nom_dept"].values[0],
-  )
-  for _, ville in villes_loc.iterrows()
-  for lat, long in zip(lat_stations, longi_stations)
+    (
+        ville["Ville"],
+        (lat, long),
+        distance.euclidean((ville["Latitude"], ville["Longitude"]), (lat, long)),
+        df.loc[(df["latitude"] == lat) & (df["longitude"] == long), "nom_dept"].values[
+            0
+        ],
+    )
+    for _, ville in villes_loc.iterrows()
+    for lat, long in zip(lat_stations, longi_stations)
 ]
 
 closest_stations = {
-  ville: min([d for d in distances if d[0] == ville], key=lambda x: x[2])
-  for ville in villes_loc["Ville"].unique()
+    ville: min([d for d in distances if d[0] == ville], key=lambda x: x[2])
+    for ville in villes_loc["Ville"].unique()
 }
 
 grenoble_distances = [d for d in distances if d[0] == "Grenoble"]
 closest_stations["Grenoble"] = sorted(grenoble_distances, key=lambda x: x[2])[:3]
 
 for ville, station_info in closest_stations.items():
-  if ville == "Grenoble":
-    for station in station_info:
-      print(ville, ":", station[3])
-  else:
-    print(ville, ":", station_info[3])
+    if ville == "Grenoble":
+        for station in station_info:
+            print(ville, ":", station[3])
+    else:
+        print(ville, ":", station_info[3])
 
 # %%
 # On peut étudier le nombre de NaN pour chaque feature
@@ -78,27 +80,27 @@ df.isna().mean().sort_index()
 # On choisit ici les variables à garder, on va tester d'abord des modèles avec les variables essentielles
 # Les variables essentielles:
 cols_essential = [
-  "ff",  # vitesse vent 10mn
-  "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
-  "u",  # humidité
+    "ff",  # vitesse vent 10mn
+    "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
+    "u",  # humidité
 ]
 # Les variables potentiellement utiles:
 cols_doubt = [
-  "dd",  # direction du vent 10mn
-  "temps_present",  # descri temps, idem que ww
-  "n",  # utile mais bcp de NaN
-  "nbas",  # idem, moins de NaN que n
-  "ht_neige",  # garder?
-  "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
-  "raf10",  # rafales sur les 10mn, très corrélé avec ff, avec un peu plus de NaN
-  "rafper",  # rafales sur la période? du coup avoir per aussi?
+    "dd",  # direction du vent 10mn
+    "temps_present",  # descri temps, idem que ww
+    "n",  # utile mais bcp de NaN
+    "nbas",  # idem, moins de NaN que n
+    "ht_neige",  # garder?
+    "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
+    "raf10",  # rafales sur les 10mn, très corrélé avec ff, avec un peu plus de NaN
+    "rafper",  # rafales sur la période? du coup avoir per aussi?
 ]
 cols_geo = [
-  "altitude",
-  # "latitude",
-  # "longitude",
-  "nom_dept",
-  "nom_reg",
+    "altitude",
+    # "latitude",
+    # "longitude",
+    "nom_dept",
+    "nom_reg",
 ]
 df = df[cols_essential + cols_geo]
 df.isna().mean().sort_values()

@@ -5,7 +5,7 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-OPTION_FULL_ANALYSIS = False  # Analyse complète ou non
+OPTION_FULL_ANALYSIS = True  # Analyse complète ou non
 OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 
 # %%
@@ -14,29 +14,29 @@ df.index = pd.to_datetime(df.index, utc=True)
 # %%
 # Simplification des noms de colonnes
 df = df.rename(
-  columns={
-    "Auvergne-Rhône-Alpes": "ARA",
-    "Bourgogne-Franche-Comté": "BFC",
-    "Centre-Val de Loire": "CVL",
-    "Grand Est": "GE",
-    "Hauts-de-France": "HDF",
-    "Nouvelle-Aquitaine": "NA",
-    "Pays de la Loire": "PL",
-    "Provence-Alpes-Côte d'Azur": "PACA",
-    "Île-de-France": "IDF",
-    "Montpellier Méditerranée Métropole": "Montpellier",
-    "Métropole Européenne de Lille": "Lille",
-    "Métropole Grenoble-Alpes-Métropole": "Grenoble",
-    "Métropole Nice Côte d'Azur": "Nice",
-    "Métropole Rennes Métropole": "Rennes",
-    "Métropole Rouen Normandie": "Rouen",
-    "Métropole d'Aix-Marseille-Provence": "Marseille",
-    "Métropole de Lyon": "Lyon",
-    "Métropole du Grand Nancy": "Nancy",
-    "Métropole du Grand Paris": "Paris",
-    "Nantes Métropole": "Nantes",
-    "Toulouse Métropole": "Toulouse",
-  },
+    columns={
+        "Auvergne-Rhône-Alpes": "ARA",
+        "Bourgogne-Franche-Comté": "BFC",
+        "Centre-Val de Loire": "CVL",
+        "Grand Est": "GE",
+        "Hauts-de-France": "HDF",
+        "Nouvelle-Aquitaine": "NA",
+        "Pays de la Loire": "PL",
+        "Provence-Alpes-Côte d'Azur": "PACA",
+        "Île-de-France": "IDF",
+        "Montpellier Méditerranée Métropole": "Montpellier",
+        "Métropole Européenne de Lille": "Lille",
+        "Métropole Grenoble-Alpes-Métropole": "Grenoble",
+        "Métropole Nice Côte d'Azur": "Nice",
+        "Métropole Rennes Métropole": "Rennes",
+        "Métropole Rouen Normandie": "Rouen",
+        "Métropole d'Aix-Marseille-Provence": "Marseille",
+        "Métropole de Lyon": "Lyon",
+        "Métropole du Grand Nancy": "Nancy",
+        "Métropole du Grand Paris": "Paris",
+        "Nantes Métropole": "Nantes",
+        "Toulouse Métropole": "Toulouse",
+    },
 )
 regions = list(df.columns)[1:13]
 villes = list(df.columns)[13:]
@@ -48,31 +48,31 @@ cols = list(df.columns)
 # %%
 # Recherche valeurs abérante
 if OPTION_FULL_ANALYSIS:
-  df[regions_france].boxplot(
-    vert=False,
-    fontsize=10,
-    grid=False,
-  )
-  plt.show()
+    df[regions_france].boxplot(
+        vert=False,
+        fontsize=10,
+        grid=False,
+    )
+    plt.show()
 
-  # Valeurs abérantes pour les villes, qu'on supprime plus tard
-  df[villes].boxplot(vert=False, fontsize=10, grid=False)
+    # Valeurs abérantes pour les villes, qu'on supprime plus tard
+    df[villes].boxplot(vert=False, fontsize=10, grid=False)
 
 # %%
 # Visualisation histogrammes
 if OPTION_FULL_ANALYSIS:
-  df[villes].hist(
-    bins=50,
-  )
-  plt.show()
-  df[regions].hist(
-    bins=50,
-  )
-  plt.show()
+    df[villes].hist(
+        bins=50,
+    )
+    plt.show()
+    df[regions].hist(
+        bins=50,
+    )
+    plt.show()
 # %%
 # Corrélation étrange pour Nancy, Nice
 if OPTION_FULL_ANALYSIS:
-  df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+    df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
 
 # %%
 # On enlève les mauvaises données pour Nancy
@@ -83,55 +83,59 @@ df["Nancy"].plot()
 # %%
 # On traite les mauvaises données de Nice
 if OPTION_NICE_SHIFT:  # Shifting à la main des mauvaises données
-  df["Nice"].plot()
-  plt.axvline(pd.Timestamp("2021-08-25"), color="r", linestyle="--")
-  plt.show()
-  dftest = df.copy()
-  # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
-  # plt.show()
-  dftest = (
-    df.assign(
-      Nice=lambda x: x["Nice"].where(x.index < "2021-08-25 09:30:00", x["Nice"] + 150)
+    df["Nice"].plot()
+    plt.axvline(pd.Timestamp("2021-08-25"), color="r", linestyle="--")
+    plt.show()
+    dftest = df.copy()
+    # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
+    # plt.show()
+    dftest = (
+        df.assign(
+            Nice=lambda x: x["Nice"].where(
+                x.index < "2021-08-25 09:30:00", x["Nice"] + 150
+            )
+        )
+        .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
+        .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
     )
-    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
-    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
-  )
-  # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
-  # plt.show()
-  df = dftest.copy()
-  df["Nice"].plot()
-  plt.show()
+    # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
+    # plt.show()
+    df = dftest.copy()
+    df["Nice"].plot()
+    plt.show()
 else:  # Elimination de ces données
-  df["Nice"].plot()
-  plt.axvline(pd.Timestamp("2021-08-01"), color="r", linestyle="--")
-  df = df.assign(Nice=lambda x: x["Nice"].where(x.index <= "2021-08-01", float("nan")))
-  df["Nice"].plot()
+    df["Nice"].plot()
+    plt.axvline(pd.Timestamp("2021-08-01"), color="r", linestyle="--")
+    df = df.assign(
+        Nice=lambda x: x["Nice"].where(x.index <= "2021-08-01", float("nan"))
+    )
+    df["Nice"].plot()
 # %%
 # Beaucoups de valeurs aberrantes pour les villes,
 # on les cherche une par une puis les élimine
 ville_seuil = [
-  ("Montpellier", 130),
-  ("Lille", 300),
-  ("Grenoble", 245),
-  ("Nice", 180),
-  ("Rennes", 110),
-  ("Rouen", 110),
-  ("Marseille", 600),
-  ("Lyon", 500),
-  ("Paris", 500),
-  ("Nantes", 90),
-  ("Toulouse", 230),
+    ("Montpellier", 130),
+    ("Lille", 300),
+    ("Grenoble", 245),
+    ("Nice", 180),
+    ("Rennes", 110),
+    ("Rouen", 110),
+    ("Marseille", 600),
+    ("Lyon", 500),
+    ("Paris", 500),
+    ("Nantes", 90),
+    ("Toulouse", 230),
 ]
 laville = "Nice"
 df[laville].plot()
 
 df = df.pipe(
-  lambda x: x.assign(
-    **{
-      ville: x[ville].where(x[ville] >= seuil, float("nan"))
-      for ville, seuil in ville_seuil
-    }
-  )
+    lambda x: x.assign(
+        **{
+            ville: x[ville].where(x[ville] >= seuil, float("nan"))
+            for ville, seuil in ville_seuil
+        }
+    )
 )
 plt.axhline(90)
 plt.show()
@@ -139,31 +143,31 @@ df[laville].plot()
 # %%
 # Le boxplot ne montre plus de valeurs abérantes
 if OPTION_FULL_ANALYSIS:
-  df[villes].boxplot(vert=False, fontsize=10, grid=False)
+    df[villes].boxplot(vert=False, fontsize=10, grid=False)
 
 # %%
 # Corrélation semble bonne maintenant
 if OPTION_FULL_ANALYSIS:
-  df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+    df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
 
 # %%
 # Seasonal plot for every year
 if OPTION_FULL_ANALYSIS:
-  year_min = df.index.min().year
-  year_max = df.index.max().year
-  for year in range(year_min, year_max + 1):
-    df_year = df.loc[f"{year}"]
-    df_year.groupby(df_year.index.month).mean()["France"].plot(label=f"{year}")
-  plt.legend()
-  plt.title("Seasonal Plot for Every Year")
-  plt.xlabel("Month")
-  plt.ylabel("Average Value")
-  plt.show()
+    year_min = df.index.min().year
+    year_max = df.index.max().year
+    for year in range(year_min, year_max + 1):
+        df_year = df.loc[f"{year}"]
+        df_year.groupby(df_year.index.month).mean()["France"].plot(label=f"{year}")
+    plt.legend()
+    plt.title("Seasonal Plot for Every Year")
+    plt.xlabel("Month")
+    plt.ylabel("Average Value")
+    plt.show()
 
 # %%
 # Il manque des dates pour les indices, on les ajoute
 full_index = pd.date_range(
-  start=df.index.min(), end=df.index.max(), freq="30min", tz="UTC"
+    start=df.index.min(), end=df.index.max(), freq="30min", tz="UTC"
 )
 missing_dates = full_index.difference(df.index)
 print(missing_dates)
