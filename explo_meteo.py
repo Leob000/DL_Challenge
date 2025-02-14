@@ -114,12 +114,7 @@ df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
 df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
 
 # %%
-# TODO Remplir les NaN consécutifs en faisant une moyenne t+1, t-1
-list_dept = df["nom_dept"].unique().tolist()
-for dept in list_dept:
-  pass
-
-df[df["nom_dept"] == "Manche"].sort_index().tail()
+# TODO Interpolate par département
 # %%
 # TODO Join: Décider comment matcher le timing 30min et 3h
 # TODO Join: Quel type de join faire?
