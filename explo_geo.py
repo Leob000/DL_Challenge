@@ -2,7 +2,6 @@
 import matplotlib.pyplot as plt
 import missingno as msno
 import pandas as pd
-
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
@@ -13,15 +12,11 @@ OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 df = pd.read_csv("data/train.csv", index_col="date")
 df.index = pd.to_datetime(df.index, utc=True)
 # %%
-# TODO clean ça
-test2 = df.loc[(df.index >= "2018-10-27") & (df.index <= "2018-10-29"), :]
-test2
-# Add missing indices
+# Il manque certains indices, on les crée
 missing_indices = pd.date_range(
-  start="2018-10-28 00:00:00+00:00", end="2018-10-28 00:30:00+00:00", freq="30T"
+  start="2018-10-28 00:00:00+00:00", end="2018-10-28 00:30:00+00:00", freq="30min"
 )
-test3 = test2.reindex(test2.index.union(missing_indices))
-test3
+df = df.reindex(df.index.union(missing_indices))
 # %%
 # Simplification des noms de colonnes
 df = df.rename(
@@ -238,6 +233,45 @@ df.loc[(df.index >= "2018") & (df.index <= "2019"), villes].isna().mean()
 
 
 def geo_tweak(df):
+  missing_indices = pd.date_range(
+    start="2018-10-28 00:00:00+00:00", end="2018-10-28 00:30:00+00:00", freq="30min"
+  )
+  df = df.reindex(df.index.union(missing_indices))
+  df = df.rename(
+    columns={
+      "Auvergne-Rhône-Alpes": "ARA",
+      "Bourgogne-Franche-Comté": "BFC",
+      "Centre-Val de Loire": "CVL",
+      "Grand Est": "GE",
+      "Hauts-de-France": "HDF",
+      "Nouvelle-Aquitaine": "NA",
+      "Pays de la Loire": "PL",
+      "Provence-Alpes-Côte d'Azur": "PACA",
+      "Île-de-France": "IDF",
+      "Montpellier Méditerranée Métropole": "Montpellier",
+      "Métropole Européenne de Lille": "Lille",
+      "Métropole Grenoble-Alpes-Métropole": "Grenoble",
+      "Métropole Nice Côte d'Azur": "Nice",
+      "Métropole Rennes Métropole": "Rennes",
+      "Métropole Rouen Normandie": "Rouen",
+      "Métropole d'Aix-Marseille-Provence": "Marseille",
+      "Métropole de Lyon": "Lyon",
+      "Métropole du Grand Nancy": "Nancy",
+      "Métropole du Grand Paris": "Paris",
+      "Nantes Métropole": "Nantes",
+      "Toulouse Métropole": "Toulouse",
+    },
+  )
+  df = df.assign(
+    Nancy=lambda x: x["Nancy"].where(x.index >= "2020-01-01", float("nan"))
+  )
+  df = (
+    df.assign(
+      Nice=lambda x: x["Nice"].where(x.index < "2021-08-25 09:30:00", x["Nice"] + 150)
+    )
+    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
+    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
+  )
   ville_seuil = [
     ("Montpellier", 130),
     ("Lille", 300),
@@ -251,44 +285,12 @@ def geo_tweak(df):
     ("Nantes", 90),
     ("Toulouse", 230),
   ]
-  return (
-    df.rename(
-      columns={
-        "Auvergne-Rhône-Alpes": "ARA",
-        "Bourgogne-Franche-Comté": "BFC",
-        "Centre-Val de Loire": "CVL",
-        "Grand Est": "GE",
-        "Hauts-de-France": "HDF",
-        "Nouvelle-Aquitaine": "NA",
-        "Pays de la Loire": "PL",
-        "Provence-Alpes-Côte d'Azur": "PACA",
-        "Île-de-France": "IDF",
-        "Montpellier Méditerranée Métropole": "Montpellier",
-        "Métropole Européenne de Lille": "Lille",
-        "Métropole Grenoble-Alpes-Métropole": "Grenoble",
-        "Métropole Nice Côte d'Azur": "Nice",
-        "Métropole Rennes Métropole": "Rennes",
-        "Métropole Rouen Normandie": "Rouen",
-        "Métropole d'Aix-Marseille-Provence": "Marseille",
-        "Métropole de Lyon": "Lyon",
-        "Métropole du Grand Nancy": "Nancy",
-        "Métropole du Grand Paris": "Paris",
-        "Nantes Métropole": "Nantes",
-        "Toulouse Métropole": "Toulouse",
-      },
-    )
-    .assign(Nancy=lambda x: x["Nancy"].where(x.index >= "2020-01-01", float("nan")))
-    .assign(
-      Nice=lambda x: x["Nice"].where(x.index < "2021-08-25 09:30:00", x["Nice"] + 150)
-    )
-    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
-    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
-    .pipe(
-      lambda x: x.assign(
-        **{
-          ville: x[ville].where(x[ville] >= seuil, float("nan"))
-          for ville, seuil in ville_seuil
-        }
-      )
+  df = df.pipe(
+    lambda x: x.assign(
+      **{
+        ville: x[ville].where(x[ville] >= seuil, float("nan"))
+        for ville, seuil in ville_seuil
+      }
     )
   )
+  return df

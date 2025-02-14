@@ -3,6 +3,7 @@ import missingno as msno
 import pandas as pd
 import utils
 from scipy.spatial import distance
+#!%matplotlib inline
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -120,7 +121,6 @@ for dept in list_dept:
 
 df[df["nom_dept"] == "Manche"].sort_index().tail()
 # %%
-# TODO Décider comment matcher le timing 30min et 3h
-
-# %%
+# TODO Join: Décider comment matcher le timing 30min et 3h
+# TODO Join: Quel type de join faire?
 # TODO Créer fonction tweak_meteo
