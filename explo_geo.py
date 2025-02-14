@@ -183,8 +183,10 @@ df = df.interpolate(method="time", limit_area="inside")
 msno.matrix(df)
 
 # %%
+df["dayofweek"] = df.index.dayofweek
+df["dayofyear"] = df.index.dayofyear
 
-
+df.groupby("dayofweek")["France"].mean().plot()
 # %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
