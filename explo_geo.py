@@ -175,8 +175,8 @@ df = df.reindex(full_index)
 msno.matrix(df)
 # %%
 # On interpole les NaN mineurs
-dftest = df.interpolate(method="time", limit_area="inside")
-msno.matrix(dftest)
+df = df.interpolate(method="time", limit_area="inside")
+msno.matrix(df)
 
 # %%
 # Fonction pour appliquer toutes les transformations faites dans ce notebook
@@ -243,4 +243,9 @@ def geo_tweak(df):
       }
     )
   )
+  full_index = pd.date_range(
+    start=df.index.min(), end=df.index.max(), freq="30min", tz="UTC"
+  )
+  df = df.reindex(full_index)
+  df = df.interpolate(method="time", limit_area="inside")
   return df
