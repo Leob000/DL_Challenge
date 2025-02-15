@@ -1,26 +1,28 @@
 # Todo:
 - 🔥 Cleanup .md files, and TODO flags
 - Handson
+- Set up 2021 set for val set? less?
 
 - Model architecture
-    - Loss adapted for NaN values?
+    - 🔥 Loss adapted for NaN values?
     - Weighted date loss (Nancy), loss with lower weight for older data?
     - Find global model architecture, check SOTA model time series, FiLM for regions?, RNN?, ARIMA, ARMA, Prophet; Ensemble methods with non DL?
     - Model for France, then regions, then stations?
 - Join files
     - Join method?
     - How to go from 3 hours to 30 min?
-    - Treat meteo NaN
+    - 🔥 Treat meteo NaN -> Interpolate by dept?
 - Feature engineering:
     - 🔥 Check other variables from Goude project, especially variables from EDF formula
     - Date
         - How to categorize date, year/timeofyear, month/day of month (for august), weekday, hour/min...
-        - Fourrier stuff?
+        - Fourrier stuff? how to best extract seasonality? Prophet can do or other?
         - Lagged year -1, ..., -n values?
         - No lagged day value because of whole year? Estimate other model then takes its output as input for NN?
         - Holidays, single holiday
     - Meteo
         - Trend, moving average?
+    - Feature scaling / categorizing check
 - Do not forget:
     - Go back to timezone +1 and +2 before uploading pred file
     - Nice reshifted for last months, check with public score if we have to unshift the preds or not

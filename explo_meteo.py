@@ -114,10 +114,3 @@ df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
 # %%
 # Nombre de NaN par variable, par département
 df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
-
-# %%
-# TODO Interpolate par département
-# %%
-# TODO Join: Décider comment matcher le timing 30min et 3h
-# TODO Join: Quel type de join faire?
-# TODO Créer fonction tweak_meteo
