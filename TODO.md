@@ -7,6 +7,9 @@
     - Liens stations-villes, stations-régions, stations-France
 - Loss pour prendre en compte NaN ?
 
+- Faire schéma global du modèle ?
+
+
 Pré-modèle
 
 # Modèle
@@ -32,3 +35,4 @@ Global:
 
 - ARIMA
 - ARMA
+- Ensemble methods to correct DL ?
