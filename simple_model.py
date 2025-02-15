@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
 from sklearn.metrics import root_mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
 from prophet import Prophet
 
 # %%
@@ -12,10 +13,18 @@ np.random.seed(42)
 df = pd.read_parquet("data/geo_tweaked.parquet")
 
 # %%
-# TODO Transform variables into dummy with pandas
+df_dummy = pd.get_dummies(
+    df[["France", "dayofweek", "dayofyear"]], columns=["dayofweek"]
+)
+scaler = MinMaxScaler()
+df_dummy["dayofyear"] = scaler.fit_transform(
+    df_dummy["dayofyear"].to_numpy().reshape(-1, 1)
+)
+X = df_dummy.iloc[:, 1:].values
+X
+
 # %%
 # RandomForest avec TimeseriesCrossVal
-X = df[["dayofweek", "dayofyear"]].values
 
 tscv = TimeSeriesSplit()
 model = RandomForestRegressor(random_state=42)
