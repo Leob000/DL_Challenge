@@ -1,5 +1,7 @@
 # Todo:
 - 🔥🔥 Index problem for both sets
+- Verif l'interpolation quadratique ne rajouter pas des outliers et ne fait pas n'importe quoi; changer d'interpolation: linear, spline, autre?
+- Elim station météo Var
 - Modèle initial prohet puis autres? possible de faire gros MLP sur toutes les données et toutes les sorties? MLP regression avec plusieurs output de regression ? Modèle fine-tune par région/autre pour éviter de retrain le fait d'apprendre les temporalités à chaque fois?
 
 - TFT
