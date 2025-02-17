@@ -1,6 +1,5 @@
 # Todo:
-- Handson
-- Set up 2021 set for val set? less?
+- 🔥🔥 Index problem for both sets
 - Modèle initial prohet puis autres? possible de faire gros MLP sur toutes les données et toutes les sorties? MLP regression avec plusieurs output de regression ? Modèle fine-tune par région/autre pour éviter de retrain le fait d'apprendre les temporalités à chaque fois?
 
 - TFT
