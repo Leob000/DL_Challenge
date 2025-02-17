@@ -105,6 +105,8 @@ cols_geo = [
 df = df[cols_essential + cols_geo]
 df.isna().mean().sort_values()
 # %%
+df["altitude"].value_counts().sort_index()
+# %%
 # On étudie comment sont répartis les NaN
 msno.matrix(df.loc[:, df.isna().mean() > 0])
 # df[cols_to_keep].corr().style.background_gradient(cmap="coolwarm").format(precision=2)
@@ -114,3 +116,5 @@ df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
 # %%
 # Nombre de NaN par variable, par département
 df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
+
+# %%

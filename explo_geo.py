@@ -71,8 +71,8 @@ if OPTION_FULL_ANALYSIS:
     plt.show()
 # %%
 # Corrélation étrange pour Nancy, Nice
-if OPTION_FULL_ANALYSIS:
-    df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+# if OPTION_FULL_ANALYSIS:
+df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
 
 # %%
 # On enlève les mauvaises données pour Nancy
@@ -147,8 +147,7 @@ if OPTION_FULL_ANALYSIS:
 
 # %%
 # Corrélation semble bonne maintenant
-if OPTION_FULL_ANALYSIS:
-    df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
 
 # %%
 # Seasonal plot for every year
@@ -193,6 +192,3 @@ df.groupby("dayofweek")["France"].mean().plot()
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
 # %%
-# df_daily = df["France"]
-# df_daily = df_daily.resample("D").mean()
-# df_daily.to_csv("data/df_daily.csv", index_label="Date")
