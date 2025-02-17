@@ -5,12 +5,32 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-OPTION_FULL_ANALYSIS = False  # Analyse complète ou non
+OPTION_FULL_ANALYSIS = True  # Analyse complète ou non
 OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 
 # %%
 df = pd.read_csv("data/train.csv", index_col="date")
-df.index = pd.to_datetime(df.index, utc=True)
+df.index = pd.to_datetime(df.index, utc=True).tz_convert("Europe/Paris")
+
+# %%
+# On vérif index integrity, il manque des indices pour les dates de changement d'heure octobre, les ajouter ou non ? Pour l'instant ne pas y toucher
+expected_index = pd.date_range(
+    start=df.index.min(), end=df.index.max(), freq="30min", tz="Europe/Paris"
+)
+if df.index.equals(expected_index):
+    print("The index is complete. No rows are missing.")
+else:
+    missing = expected_index.difference(df.index)
+    print("Missing timestamps:", missing)
+
+# %%
+# Il manque des dates pour les indices, on les ajoute
+full_index = pd.date_range(
+    start=df.index.min(), end=df.index.max(), freq="30min", tz="Europe/Paris"
+)
+missing_dates = full_index.difference(df.index)
+print(missing_dates)
+# df = df.reindex(full_index)
 # %%
 # Simplification des noms de colonnes
 df = df.rename(
@@ -141,6 +161,15 @@ plt.axhline(90)
 plt.show()
 df[laville].plot()
 # %%
+# Correction de certains outliers de Nice
+df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
+plt.axhline(510)
+df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"] = df.loc[
+    (df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"
+].where(df["Nice"] <= 510, float("nan"))
+df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
+
+# %%
 # Le boxplot ne montre plus de valeurs abérantes
 if OPTION_FULL_ANALYSIS:
     df[villes].boxplot(vert=False, fontsize=10, grid=False)
@@ -164,15 +193,6 @@ if OPTION_FULL_ANALYSIS:
     plt.show()
 
 # %%
-# Il manque des dates pour les indices, on les ajoute
-full_index = pd.date_range(
-    start=df.index.min(), end=df.index.max(), freq="30min", tz="UTC"
-)
-missing_dates = full_index.difference(df.index)
-print(missing_dates)
-
-df = df.reindex(full_index)
-# %%
 # 2 types de valeurs manquantes, soit globalement communes à toutes les villes
 # soit manque du début ~2017 différent pour chaque ville
 msno.matrix(df)
@@ -183,11 +203,6 @@ msno.matrix(df)
 
 # Les NaN majeurs (valeurs manquantes 2017 pour les villes, <2020 pour Nancy) ne sont pas interpolés, on trainera juste ces zones sans ces valeurs
 
-# %%
-df["dayofweek"] = df.index.dayofweek
-df["dayofyear"] = df.index.dayofyear
-
-df.groupby("dayofweek")["France"].mean().plot()
 # %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
