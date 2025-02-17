@@ -198,11 +198,20 @@ if OPTION_FULL_ANALYSIS:
 msno.matrix(df)
 # %%
 # On interpole les NaN mineurs
-df = df.interpolate(method="quadratic", limit_area="inside")
+df_inter = df.interpolate(method="spline", order=3, limit_area="inside")
 msno.matrix(df)
 
 # Les NaN majeurs (valeurs manquantes 2017 pour les villes, <2020 pour Nancy) ne sont pas interpolés, on trainera juste ces zones sans ces valeurs
 
+# %%
+for ville in villes:
+    print(ville)
+    df[ville].plot(linewidth=1, alpha=0.5)
+    df_inter[ville].plot(linewidth=1, alpha=0.5)
+    plt.show()
+
+# %%
+df_inter.to_parquet("data/geo_inter.parquet", engine="pyarrow")
 # %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
