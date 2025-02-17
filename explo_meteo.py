@@ -1,16 +1,18 @@
 # %%
 import missingno as msno
+import matplotlib.pyplot as plt
 import pandas as pd
 import utils
 from scipy.spatial import distance
+
 #!%matplotlib inline
+OPTION_FULL_ANALYSIS = True
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
 df.set_index("date", inplace=True)
-df.index = pd.to_datetime(df.index, utc=True)
-
-
+df.index = pd.to_datetime(df.index, utc=True).tz_convert("Europe/Paris")
+df = df.sort_index()
 # %%
 df.columns
 # %%
@@ -75,7 +77,8 @@ for ville, station_info in closest_stations.items():
 # On peut étudier le nombre de NaN pour chaque feature
 pd.set_option("display.max_rows", 500)
 df.isna().mean().sort_index()
-
+# On met nbas en format numérique
+df["nbas"] = pd.to_numeric(df["nbas"])
 # %%
 # On choisit ici les variables à garder, on va tester d'abord des modèles avec les variables essentielles
 # Les variables essentielles:
@@ -118,3 +121,22 @@ df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
 df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
 
 # %%
+# Bcp de NaN pour le Var
+# On l'élimine car on a pas les valeurs pour le test set
+depts = df["nom_dept"].unique().tolist()
+if OPTION_FULL_ANALYSIS:
+    for dept in depts:
+        print(dept)
+        msno.matrix(df[df["nom_dept"] == dept])
+        plt.show()
+# %%
+# expected_index = pd.date_range(
+#     start=df.index.min(), end=df.index.max(), freq="3H", tz="Europe/Paris"
+# )
+
+# # Compare the expected index with the actual one
+# if df.index.equals(expected_index):
+#     print("The index is complete. No rows are missing.")
+# else:
+#     missing = expected_index.difference(df.index)
+#     print("Missing timestamps:", missing)
