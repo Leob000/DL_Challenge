@@ -5,7 +5,7 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-OPTION_FULL_ANALYSIS = True  # Analyse complète ou non
+OPTION_FULL_ANALYSIS = False  # Analyse complète ou non
 OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
 
 # %%
