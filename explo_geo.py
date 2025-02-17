@@ -179,8 +179,10 @@ df = df.reindex(full_index)
 msno.matrix(df)
 # %%
 # On interpole les NaN mineurs
-df = df.interpolate(method="time", limit_area="inside")
+df = df.interpolate(method="quadratic", limit_area="inside")
 msno.matrix(df)
+
+# Les NaN majeurs (valeurs manquantes 2017 pour les villes, <2020 pour Nancy) ne sont pas interpolés, on trainera juste ces zones sans ces valeurs
 
 # %%
 df["dayofweek"] = df.index.dayofweek
@@ -190,3 +192,7 @@ df.groupby("dayofweek")["France"].mean().plot()
 # %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
+# %%
+# df_daily = df["France"]
+# df_daily = df_daily.resample("D").mean()
+# df_daily.to_csv("data/df_daily.csv", index_label="Date")
