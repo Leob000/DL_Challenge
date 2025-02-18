@@ -219,8 +219,15 @@ df_concat = df_concat.drop(labels="pred_France", axis=1)
 df = df_concat
 
 # %%
-# Enregistrement des données traitées
-df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
+# Prolongement de l'index jusqu'à fin 2022
+extended_index = pd.date_range(
+    start=df.index.min(),
+    end=pd.Timestamp("2022-12-31 23:30:00+01:00", tz="Europe/Paris"),
+    freq="30min",
+)
+df = df.reindex(extended_index)
+df
 
 # %%
-# Ready for feature eng?
+# Enregistrement des données traitées
+df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
