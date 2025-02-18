@@ -160,7 +160,9 @@ df2 = df.copy()
 df2 = df2.drop(columns="altitude")
 df_france = df2.groupby(df2.index)[cols_essential].mean()
 df_france["zone"] = "France"
+df_france["is_pays"] = True
 df2 = pd.concat([df2, df_france])
+df2["is_pays"] = df2["is_pays"].fillna("False")
 df = df2.copy()
 
 # %%
@@ -173,7 +175,9 @@ df_regions = df2.groupby(["nom_reg", df2.index])[cols_essential].mean()
 df_regions["zone"] = df_regions.index.get_level_values("nom_reg")
 
 df_regions = df_regions.reset_index(level="nom_reg", drop=True)
+df_regions["is_reg"] = True
 df2 = pd.concat([df2, df_regions])
+df2["is_reg"] = df2["is_reg"].fillna("False")
 df = df2.copy()
 
 # %%
@@ -198,8 +202,7 @@ for ville, dept in ville_dept:
 
 # Moyenne des 2 stations Lyon, Hautes-Alphes pour Grenoble
 df3 = df2.loc[(df2["nom_dept"] == "Rhône") | (df2["nom_dept"] == "Hautes-Alpes")]
-col = ["ff", "tc", "u", "altitude"]
-df3 = df3.groupby(df3.index)[col].mean()
+df3 = df3.groupby(df3.index)[cols_essential].mean()
 df3["zone"] = "Grenoble"
 df3["is_ville"] = True
 
@@ -207,6 +210,15 @@ df2 = pd.concat([df2, df3])
 df2["is_ville"] = df2["is_ville"].fillna("False")
 df = df2.copy()
 
+# %%
+# On drop toutes les stations non villes
+#### Besoin de refaire, attetion, notamment bien remplir les NaN
+
+# df = df[
+#     (df["is_pays"] != "False") & (df["is_reg"] != "False") & (df["is_ville"] != "False")
+# ]
+# df
+# %%
 # %%
 # join avec multiindex?
 
