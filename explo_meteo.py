@@ -134,7 +134,7 @@ df = df[df["nom_dept"] != "Var"]
 df.groupby(["nom_dept"])[cols_essential].mean()
 
 # %%
-# Setting up multiindex
+# On met le même index que train+test geo dataset, on inteprole pour passer d'intervalle 3h à 30min
 new_index = pd.date_range(
     start="2017-02-13 01:30:00+01:00",
     end="2022-12-31 23:30:00+01:00",
@@ -155,6 +155,28 @@ for dept in depts:
 df_list
 df = pd.concat(df_list)
 # %%
+# Regrouper les valeurs par pays
+df2 = df.copy()
+df2 = df2.drop(columns="altitude")
+df_france = df2.groupby(df2.index)[cols_essential].mean()
+df_france["zone"] = "France"
+df2 = pd.concat([df2, df_france])
+df = df2.copy()
+
+# %%
+# Regrouper par régions
+df2 = df.copy()
+regions = df2["nom_reg"].unique().tolist()
+regions = [x for x in regions if x == x]  # Retire le nan
+regions
+df_regions = df2.groupby(["nom_reg", df2.index])[cols_essential].mean()
+df_regions["zone"] = df_regions.index.get_level_values("nom_reg")
+
+df_regions = df_regions.reset_index(level="nom_reg", drop=True)
+df2 = pd.concat([df2, df_regions])
+df = df2.copy()
+
+# %%
 # On renomme les stations pour les villes qui correpondent, en faisant la moyenne pour Grenoble
 df2 = df.copy()
 ville_dept = [
@@ -171,23 +193,19 @@ ville_dept = [
     ("Toulouse", "Haute-Garonne"),
 ]
 for ville, dept in ville_dept:
-    df2.loc[df2["nom_dept"] == dept, "nom_dept"] = ville
-    df2.loc[df2["nom_dept"] == ville, "is_ville"] = True
+    df2.loc[df2["nom_dept"] == dept, "zone"] = ville
+    df2.loc[df2["nom_dept"] == dept, "is_ville"] = True
 
 # Moyenne des 2 stations Lyon, Hautes-Alphes pour Grenoble
-df3 = df2.loc[(df2["nom_dept"] == "Lyon") | (df2["nom_dept"] == "Hautes-Alpes")]
+df3 = df2.loc[(df2["nom_dept"] == "Rhône") | (df2["nom_dept"] == "Hautes-Alpes")]
 col = ["ff", "tc", "u", "altitude"]
 df3 = df3.groupby(df3.index)[col].mean()
-df3["nom_dept"] = "Grenoble"
-df3["nom_reg"] = "Grenoble"
+df3["zone"] = "Grenoble"
 df3["is_ville"] = True
 
 df2 = pd.concat([df2, df3])
 df2["is_ville"] = df2["is_ville"].fillna("False")
-df2
-
-# %%
-# Regrouper les valeurs pour les régions
+df = df2.copy()
 
 # %%
 # join avec multiindex?
