@@ -154,8 +154,37 @@ for dept in depts:
     df_list.append(df_temp)
 df_list
 df = pd.concat(df_list)
+# %%
+# On renomme les stations pour les villes qui correpondent, en faisant la moyenne pour Grenoble
+df2 = df.copy()
+ville_dept = [
+    ("Montpellier", "Hérault"),
+    ("Lille", "Nord"),
+    ("Nice", "Alpes-Maritimes"),
+    ("Rennes", "Ille-et-Vilaine"),
+    ("Rouen", "Seine-Maritime"),
+    ("Marseille", "Bouches-du-Rhône"),
+    ("Lyon", "Rhône"),
+    ("Nancy", "Meurthe-et-Moselle"),
+    ("Paris", "Essonne"),
+    ("Nantes", "Loire-Atlantique"),
+    ("Toulouse", "Haute-Garonne"),
+]
+for ville, dept in ville_dept:
+    df2.loc[df2["nom_dept"] == dept, "nom_dept"] = ville
+
+# Moyenne des 2 stations Lyon, Hautes-Alphes pour Grenoble
+df3 = df2.loc[(df2["nom_dept"] == "Lyon") | (df2["nom_dept"] == "Hautes-Alpes")]
+col = ["ff", "tc", "u", "altitude"]
+df3 = df3.groupby(df3.index)[col].mean()
+df3["nom_dept"] = "Grenoble"
+df3["nom_reg"] = "Grenoble"
+
+df2 = pd.concat([df2, df3])
+df = df2.copy()
 
 # %%
+######## A VERIF A PARTIR DE LA, meme implémanter post join?????
 # Feature eng, binning temp
 df2 = df.copy()
 df2["temp_below_15"] = df2["tc"] < 15
