@@ -25,11 +25,11 @@
         - No lagged day value because of whole year? Estimate other model then takes its output as input for NN?
         - Holidays, single holiday
     - Meteo
+        - De base regrouper les régions en faisant moyenne classique, plus tard regrouper en faisant moyenne pondérée par pop des départements?
         - Onehotenc: Mountain, seaside, ...
-        - Exponentially smoothed 0.95 and 0.99; tempmin99 and tempmax99, min/max of smooth 0.99 last 24h
         - Température ressentie, lissage exponentiel en feature engineering (temp passée, vent, humidité, ensolleillement)
-        - Binning (utile pour seuil à 15 degré de temp, sous lequel on chauffera plus?)
-    - Feature scaling / categorizing check
+    - Feature scaling / categorizing check, passer les colonnes en bool si nécessaire
+    - Round les values?
 - Do not forget:
     - Nice reshifted for last months, check with public score if we have to unshift the preds or not
     - National soberty plan, announced 2022-06, in action from 2022-10; underestimate the model from a certain date to get better results?
