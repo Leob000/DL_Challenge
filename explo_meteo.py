@@ -6,7 +6,7 @@ import utils
 from scipy.spatial import distance
 
 #!%matplotlib inline
-OPTION_FULL_ANALYSIS = True
+OPTION_FULL_ANALYSIS = False
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -129,14 +129,28 @@ if OPTION_FULL_ANALYSIS:
         print(dept)
         msno.matrix(df[df["nom_dept"] == dept])
         plt.show()
-# %%
-# expected_index = pd.date_range(
-#     start=df.index.min(), end=df.index.max(), freq="3H", tz="Europe/Paris"
-# )
 
-# # Compare the expected index with the actual one
-# if df.index.equals(expected_index):
-#     print("The index is complete. No rows are missing.")
-# else:
-#     missing = expected_index.difference(df.index)
-#     print("Missing timestamps:", missing)
+df = df[df["nom_dept"] != "Var"]
+df.groupby(["nom_dept"])[cols_essential].mean()
+# %%
+# Setting up multiindex
+new_index = pd.date_range(
+    start="2017-02-13 01:30:00+01:00",
+    end="2022-12-31 23:30:00+01:00",
+    freq="30min",
+).tz_convert("Europe/Paris")
+new_index
+
+depts = df["nom_dept"].unique().tolist()
+df_list = []
+for dept in depts:
+    df_temp = df[df["nom_dept"] == dept].copy()
+    df_temp = df_temp.reindex(new_index)
+    for col in ["nom_dept", "nom_reg", "altitude"]:
+        df_temp[col] = df_temp[col].ffill().bfill()
+    for col in ["ff", "tc", "u"]:
+        df_temp[col] = df_temp[col].interpolate(method="time", limit_direction="both")
+    df_list.append(df_temp)
+df_list
+df = pd.concat(df_list)
+# %%
