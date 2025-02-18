@@ -25,11 +25,11 @@ else:
 
 # %%
 # Il manque des dates pour les indices, on les ajoute
-full_index = pd.date_range(
-    start=df.index.min(), end=df.index.max(), freq="30min", tz="Europe/Paris"
-)
-missing_dates = full_index.difference(df.index)
-print(missing_dates)
+# full_index = pd.date_range(
+#     start=df.index.min(), end=df.index.max(), freq="30min", tz="Europe/Paris"
+# )
+# missing_dates = full_index.difference(df.index)
+# print(missing_dates)
 # df = df.reindex(full_index)
 # %%
 # Simplification des noms de colonnes
