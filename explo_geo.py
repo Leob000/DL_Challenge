@@ -209,6 +209,18 @@ msno.matrix(df)
 #     plt.show()
 
 # %%
+# Ajout de l'index 2022 à la df
+df_2022 = pd.read_csv("data/pred_template.csv", index_col="date")
+df_2022 = df_2022["pred_France"]
+df_2022.index = pd.to_datetime(df_2022.index, utc=True).tz_convert("Europe/Paris")
+
+df_concat = pd.concat([df, df_2022])
+df_concat = df_concat.drop(labels="pred_France", axis=1)
+df = df_concat
+
+# %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
+
 # %%
+# Ready for feature eng?
