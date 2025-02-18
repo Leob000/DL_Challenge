@@ -14,8 +14,6 @@
     - Model for France, then regions, then stations?
 - Join files
     - Join method?
-    - How to go from 3 hours to 30 min?
-    - 🔥 Treat meteo NaN -> Interpolate by dept?
 - Feature engineering:
     - 🔥 Check other variables from Goude project, especially variables from EDF formula
     - Date
@@ -28,12 +26,11 @@
         - Holidays, single holiday
     - Meteo
         - Onehotenc: Mountain, seaside, ...
-        - Trend, moving average?
+        - Exponentially smoothed 0.95 and 0.99; tempmin99 and tempmax99, min/max of smooth 0.99 last 24h
         - Température ressentie, lissage exponentiel en feature engineering (temp passée, vent, humidité, ensolleillement)
         - Binning (utile pour seuil à 15 degré de temp, sous lequel on chauffera plus?)
     - Feature scaling / categorizing check
 - Do not forget:
-    - Go back to timezone +1 and +2 before uploading pred file; delete entry for october daylightsaving
     - Nice reshifted for last months, check with public score if we have to unshift the preds or not
     - National soberty plan, announced 2022-06, in action from 2022-10; underestimate the model from a certain date to get better results?
     - Standardization y and yhat, layernorm/batchnorm makes this useless?
