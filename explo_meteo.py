@@ -160,10 +160,12 @@ df2 = df.copy()
 df2 = df2.drop(columns="altitude")
 df_france = df2.groupby(df2.index)[cols_essential].mean()
 df_france["zone"] = "France"
-df_france["is_pays"] = True
+df_france["is_pays"] = 1
 df2 = pd.concat([df2, df_france])
-df2["is_pays"] = df2["is_pays"].fillna("False")
+df2["is_pays"] = df2["is_pays"].fillna(0)
+
 df = df2.copy()
+df2["is_pays"].value_counts(dropna=False)
 
 # %%
 # Regrouper par régions
@@ -175,10 +177,12 @@ df_regions = df2.groupby(["nom_reg", df2.index])[cols_essential].mean()
 df_regions["zone"] = df_regions.index.get_level_values("nom_reg")
 
 df_regions = df_regions.reset_index(level="nom_reg", drop=True)
-df_regions["is_reg"] = True
+df_regions["is_reg"] = 1
 df2 = pd.concat([df2, df_regions])
-df2["is_reg"] = df2["is_reg"].fillna("False")
+df2["is_reg"] = df2["is_reg"].fillna(0)
+
 df = df2.copy()
+df2["is_reg"].value_counts(dropna=False)
 
 # %%
 # On renomme les stations pour les villes qui correpondent, en faisant la moyenne pour Grenoble
@@ -198,29 +202,39 @@ ville_dept = [
 ]
 for ville, dept in ville_dept:
     df2.loc[df2["nom_dept"] == dept, "zone"] = ville
-    df2.loc[df2["nom_dept"] == dept, "is_ville"] = True
+    df2.loc[df2["nom_dept"] == dept, "is_ville"] = 1
 
 # Moyenne des 2 stations Lyon, Hautes-Alphes pour Grenoble
 df3 = df2.loc[(df2["nom_dept"] == "Rhône") | (df2["nom_dept"] == "Hautes-Alpes")]
 df3 = df3.groupby(df3.index)[cols_essential].mean()
 df3["zone"] = "Grenoble"
-df3["is_ville"] = True
+df3["is_ville"] = 1
 
 df2 = pd.concat([df2, df3])
-df2["is_ville"] = df2["is_ville"].fillna("False")
+df2["is_ville"] = df2["is_ville"].fillna(0)
+
 df = df2.copy()
+df2["is_ville"].value_counts(dropna=False)
 
 # %%
-# On drop toutes les stations non villes
-#### Besoin de refaire, attetion, notamment bien remplir les NaN
+# On ne garde que les observations soit pays, soit region, soit ville
+li_is = ["is_pays", "is_reg", "is_ville"]
+df["is_pays"] = df["is_pays"].fillna(0)
+df["is_reg"] = df["is_reg"].fillna(0)
+if OPTION_FULL_ANALYSIS:
+    for i in li_is:
+        print(df[i].value_counts(dropna=False))
 
-# df = df[
-#     (df["is_pays"] != "False") & (df["is_reg"] != "False") & (df["is_ville"] != "False")
-# ]
-# df
+df = df[(df["is_pays"] == 1) | (df["is_reg"] == 1) | (df["is_ville"] == 1)]
+
+if OPTION_FULL_ANALYSIS:
+    for i in li_is:
+        print(df.loc[df[i] == 1]["zone"].value_counts(dropna=False))
+
+df = df.drop(columns=["nom_dept", "nom_reg"])
+
 # %%
-# %%
-# join avec multiindex?
+# Réfléchir à comment join, feature engineering avant ou après?
 
 # %%
 ######## A VERIF A PARTIR DE LA, meme implémanter post join?????
