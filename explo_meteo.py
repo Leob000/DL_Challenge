@@ -132,6 +132,7 @@ if OPTION_FULL_ANALYSIS:
 
 df = df[df["nom_dept"] != "Var"]
 df.groupby(["nom_dept"])[cols_essential].mean()
+
 # %%
 # Setting up multiindex
 new_index = pd.date_range(
@@ -153,4 +154,35 @@ for dept in depts:
     df_list.append(df_temp)
 df_list
 df = pd.concat(df_list)
+
 # %%
+# Feature eng, binning temp
+df2 = df.copy()
+df2["temp_below_15"] = df2["tc"] < 15
+
+for dept in depts:
+    df2.loc[df2["nom_dept"] == dept, "tc_ewm15"] = (
+        df2.loc[df2["nom_dept"] == dept, "tc"].ewm(alpha=0.15).mean()
+    )
+    df2.loc[df2["nom_dept"] == dept, "tc_ewm06"] = (
+        df2.loc[df2["nom_dept"] == dept, "tc"].ewm(alpha=0.06).mean()
+    )
+    df2.loc[df2["nom_dept"] == dept, "tc_ewm15_max24h"] = (
+        df2.loc[df2["nom_dept"] == dept, "tc_ewm15"].rolling("24h").max()
+    )
+    df2.loc[df2["nom_dept"] == dept, "tc_ewm15_min24h"] = (
+        df2.loc[df2["nom_dept"] == dept, "tc_ewm15"].rolling("24h").min()
+    )
+
+df = df2.copy()
+
+if OPTION_FULL_ANALYSIS:
+    for i in ["tc", "tc_ewm15", "tc_ewm06", "tc_ewm15_max24h", "tc_ewm15_min24h"]:
+        plt.plot(
+            df.loc[(df["nom_dept"] == "Manche") & (df.index <= "2017-02-18"), i],
+            linewidth=1,
+            alpha=0.5,
+        )
+    plt.show()
+# %%
+df.to_parquet("data/meteo_tweaked.parquet", engine="pyarrow")
