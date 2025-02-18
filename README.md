@@ -1,7 +1,6 @@
 # Todo:
-- 🔥🔥 Index problem for both sets
-- Elim station météo Var
 - Modèle initial prohet puis autres? possible de faire gros MLP sur toutes les données et toutes les sorties? MLP regression avec plusieurs output de regression ? Modèle fine-tune par région/autre pour éviter de retrain le fait d'apprendre les temporalités à chaque fois?
+- Normalisation problem, France is the same weight as metropoles; make a weighted loss, weigth = mean electricity consumption?
 
 - TFT
     - One hot encode region, station/city
@@ -9,7 +8,7 @@
     - NaN 2017?
 
 - Model architecture
-    - 🔥 Loss adapted for NaN values?
+    - (Loss adapted for NaN values?)
     - Weighted date loss (Nancy), loss with lower weight for older data?
     - Find global model architecture, check SOTA model time series, FiLM for regions?, RNN?, ARIMA, ARMA, Prophet; Ensemble methods with non DL?
     - Model for France, then regions, then stations?
