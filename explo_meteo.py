@@ -172,6 +172,7 @@ ville_dept = [
 ]
 for ville, dept in ville_dept:
     df2.loc[df2["nom_dept"] == dept, "nom_dept"] = ville
+    df2.loc[df2["nom_dept"] == ville, "is_ville"] = True
 
 # Moyenne des 2 stations Lyon, Hautes-Alphes pour Grenoble
 df3 = df2.loc[(df2["nom_dept"] == "Lyon") | (df2["nom_dept"] == "Hautes-Alpes")]
@@ -179,9 +180,17 @@ col = ["ff", "tc", "u", "altitude"]
 df3 = df3.groupby(df3.index)[col].mean()
 df3["nom_dept"] = "Grenoble"
 df3["nom_reg"] = "Grenoble"
+df3["is_ville"] = True
 
 df2 = pd.concat([df2, df3])
-df = df2.copy()
+df2["is_ville"] = df2["is_ville"].fillna("False")
+df2
+
+# %%
+# Regrouper les valeurs pour les régions
+
+# %%
+# join avec multiindex?
 
 # %%
 ######## A VERIF A PARTIR DE LA, meme implémanter post join?????
