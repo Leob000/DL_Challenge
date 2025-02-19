@@ -33,6 +33,7 @@
     - Feature scaling / categorizing check, passer les colonnes en bool si nécessaire
     - Round les values?
 - Do not forget:
+    - Data par ordre de date sur numpy? et ajouter année pour GRU?
     - Nice reshifted for last months, check with public score if we have to unshift the preds or not
     - National soberty plan, announced 2022-06, in action from 2022-10; underestimate the model from a certain date to get better results?
     - Standardization y and yhat, layernorm/batchnorm makes this useless?
