@@ -140,6 +140,13 @@ df = df2.copy()
 # %%
 # On transforme la colonne "zone" en multiples dummy features
 df = pd.get_dummies(df, columns=["zone"], prefix="zone")
+# %%
+# On toutes les variables catégorielles en bool
+li_bool = ["is_ville", "is_reg", "is_pays", "winter_hour"]
+for col in li_bool:
+    # print(df2[col].value_counts(dropna=False))
+    df[col] = df[col].astype(bool)
+    # print(df2[col].value_counts(dropna=False))
 
 # %%
 df.to_parquet("data/clean_data.parquet", engine="pyarrow")
