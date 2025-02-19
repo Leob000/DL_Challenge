@@ -3,6 +3,7 @@ import pandas as pd
 import missingno as msno
 import matplotlib.pyplot as plt
 import numpy as np
+import holidays
 
 OPTION_FULL_ANALYSIS = False
 
@@ -129,5 +130,11 @@ df2["winter_hour"] = df2.index.map(
     lambda dt: 1 if dt.utcoffset() == pd.Timedelta(hours=1) else 0
 )
 
+# Flag single holiday
+years = df2.index.year.unique()
+fr_holidays = holidays.France(years=years)
+df2["is_holiday"] = df2.index.map(lambda x: x.date() in fr_holidays)
+
+df2.drop(columns=["minute_of_day", "dayofweek", "dayofyear"], inplace=True)
 df = df2.copy()
 # %%
