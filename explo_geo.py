@@ -35,15 +35,15 @@ else:
 # Simplification des noms de colonnes
 df = df.rename(
     columns={
-        "Auvergne-Rhône-Alpes": "ARA",
-        "Bourgogne-Franche-Comté": "BFC",
-        "Centre-Val de Loire": "CVL",
-        "Grand Est": "GE",
-        "Hauts-de-France": "HDF",
-        "Nouvelle-Aquitaine": "NA",
-        "Pays de la Loire": "PL",
-        "Provence-Alpes-Côte d'Azur": "PACA",
-        "Île-de-France": "IDF",
+        # "Auvergne-Rhône-Alpes": "ARA",
+        # "Bourgogne-Franche-Comté": "BFC",
+        # "Centre-Val de Loire": "CVL",
+        # "Grand Est": "GE",
+        # "Hauts-de-France": "HDF",
+        # "Nouvelle-Aquitaine": "NA",
+        # "Pays de la Loire": "PL",
+        # "Provence-Alpes-Côte d'Azur": "PACA",
+        # "Île-de-France": "IDF",
         "Montpellier Méditerranée Métropole": "Montpellier",
         "Métropole Européenne de Lille": "Lille",
         "Métropole Grenoble-Alpes-Métropole": "Grenoble",
@@ -231,3 +231,5 @@ df
 # %%
 # Enregistrement des données traitées
 df.to_parquet("data/geo_tweaked.parquet", engine="pyarrow")
+
+# %%
