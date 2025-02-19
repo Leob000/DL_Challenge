@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+plt.rcParams["figure.figsize"] = [10, 5]
+
 COLLAB = False
+FULL_TRAIN = False
 if COLLAB:
     from google.colab import drive
 
@@ -75,18 +78,21 @@ def rescale(dff, col):
 
 
 # %%
-df_train = df[df.index < "2021"]
-df_val = df[(df.index >= "2021") & (df.index < "2022")]
-df_test = df[df.index >= "2022"]
+if not FULL_TRAIN:
+    df_train = df[df.index < "2021"]
+    df_val = df[(df.index >= "2021") & (df.index < "2022")]
+    df_test = df[df.index >= "2022"]
 
-X_train = df_train.drop(columns=["Load"]).to_numpy(dtype="float32")
-y_train = df_train["Load"].to_numpy(dtype="float32")
+    X_train = df_train.drop(columns=["Load"]).to_numpy(dtype="float32")
+    y_train = df_train["Load"].to_numpy(dtype="float32")
 
-X_val = df_val.drop(columns=["Load"]).to_numpy(dtype="float32")
-y_val = df_val["Load"].to_numpy(dtype="float32")
+    X_val = df_val.drop(columns=["Load"]).to_numpy(dtype="float32")
+    y_val = df_val["Load"].to_numpy(dtype="float32")
 
-X_train = df_train.drop(columns=["Load"]).to_numpy(dtype="float32")
-y_train = df_train["Load"].to_numpy(dtype="float32")
+    X_test = df_test.drop(columns=["Load"]).to_numpy(dtype="float32")
+    y_test = df_test["Load"].to_numpy(dtype="float32")
+else:
+    
 
 # %%
 from sklearn.neural_network import MLPRegressor
@@ -99,8 +105,19 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3520.0179453667292 err_val: 5566.213886271534
 # MLP (100,75,50) alpha=0.0005 12m
 # err_train: 3562.9267325270466 err_val: 5432.463928511991
+# MLP (100,75,50) alpha=0.001 17m colab
+# err_train: 3572.5110659410075 err_val: 5384.728522402602
+# MLP (150,75,50) alpha=0.001 11m
+# err_train: 3434.437815640683 err_val: 5599.2871695679
+# MLP (160,80,70,50) tol=0.00005 alpha=0.001 36m
+# err_train: 3266.782885785861 err_val: 5571.2599459496205
+
 model = MLPRegressor(
-    hidden_layer_sizes=(100, 75, 50), alpha=0.0005, verbose=True, random_state=42
+    hidden_layer_sizes=(100, 75, 50),
+    # tol=0.00005,
+    alpha=0.001,
+    verbose=True,
+    random_state=42,
 )
 # %%
 model.fit(X_train, y_train)
@@ -124,6 +141,21 @@ df_train_result = pd.merge(
 rescale(df_train_result, "Load_pred")
 rescale(df_train_result, "Load")
 
+df_test_result = pd.merge(
+    df_test.reset_index(),
+    pd.DataFrame(model.predict(X_test), columns=["Load_pred"]),
+    left_index=True,
+    right_index=True,
+)
+rescale(df_test_result, "Load_pred")
+
+
+# %%
+# TODO setup truc automatique pour sortir format pour upload sur le site
+# df_test_result.set_index("date").drop(
+#     columns=["Load", "ff", "tc", "u", "is_ville", "is_pays", "is_reg", "temp_below"]
+# )
+
 
 # %%
 def err(dff, col_true, col_pred):
@@ -139,29 +171,20 @@ def err(dff, col_true, col_pred):
 err_train = err(df_train_result, "Load", "Load_pred")
 err_val = err(df_val_result, "Load", "Load_pred")
 print("err_train:", err_train, "err_val:", err_val)
-# %%
-# Train plot
-plt.plot(
-    df_train_result.loc[df_train_result["zone_France"] == 1, "Load"],
-    linewidth=1,
-    alpha=0.8,
-)
-plt.plot(
-    df_train_result.loc[df_train_result["zone_France"] == 1, "Load_pred"],
-    linewidth=1,
-    alpha=0.8,
-)
-plt.show()
 
-# Val plot
-plt.rcParams["figure.figsize"] = [10, 5]
-plt.plot(
-    df_val_result.loc[df_val_result["zone_France"] == 1, "Load"], linewidth=1, alpha=0.8
-)
-plt.plot(
-    df_val_result.loc[df_val_result["zone_France"] == 1, "Load_pred"],
-    linewidth=1,
-    alpha=0.8,
-)
-plt.show()
+
 # %%
+def plot_pred(dff, zone):
+    plt.plot(dff.loc[dff[zone] == 1, "Load"], linewidth=1, alpha=0.8)
+    plt.plot(
+        dff.loc[dff[zone] == 1, "Load_pred"],
+        linewidth=1,
+        alpha=0.8,
+    )
+    plt.title(zone)
+    plt.show()
+
+
+# Train and valplot
+for i in [df_train_result, df_val_result]:
+    plot_pred(i, "zone_Grenoble")
