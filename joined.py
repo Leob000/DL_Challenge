@@ -2,6 +2,7 @@
 import pandas as pd
 import missingno as msno
 import matplotlib.pyplot as plt
+import numpy as np
 
 OPTION_FULL_ANALYSIS = False
 
@@ -69,10 +70,11 @@ df["is_reg"] = df["is_reg"].fillna(0)
 df["is_pays"] = df["is_pays"].fillna(0)
 
 # %%
-# Feature eng, binning temp
-# On met la date en index
+# Feature eng: Temp
+# Temp flag <15 degrees celcius
+# Exponential smoothin, alpha=0.15/0.06, min/max 24h of exp smoothing 0.15
 df2 = df.copy()
-df2 = df2.set_index("date")
+df2 = df2.set_index("date")  # On met la date en index
 df2["temp_below_15"] = df2["tc"] < 15
 
 zones = df2["zone"].unique().tolist()
@@ -103,3 +105,26 @@ if OPTION_FULL_ANALYSIS:
 df = df2.copy()
 
 # %%
+# Feature eng: Dates
+df2 = df.copy()
+
+# Trigonometry circles
+df2["minute_of_day"] = df2.index.hour * 60 + df2.index.minute
+df2["sin_time"] = np.sin(2 * np.pi * df2["minute_of_day"] / 1440)
+df2["cos_time"] = np.cos(2 * np.pi * df2["minute_of_day"] / 1440)
+
+df2["dayofweek"] = df2.index.dayofweek  # Monday=0, Sunday=6
+df2["sin_dayofweek"] = np.sin(2 * np.pi * df2["dayofweek"] / 7)
+df2["cos_dayofweek"] = np.cos(2 * np.pi * df2["dayofweek"] / 7)
+
+df2["dayofyear"] = df2.index.dayofyear
+df2["sin_dayofyear"] = np.sin(2 * np.pi * df2["dayofyear"] / 365)
+df2["cos_dayofyear"] = np.cos(2 * np.pi * df2["dayofyear"] / 365)
+
+# Flag weekend
+df2["is_weekend"] = (df2["dayofweek"] == 5) | (df2["dayofweek"] == 6)
+
+df = df2.copy()
+# %%
+df2 = df.copy()
+df2
