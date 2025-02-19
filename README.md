@@ -18,6 +18,8 @@
     - 🔥 Check other variables from Goude project, especially variables from EDF formula
     - Date
         - Categorize: Categorize month, day, hour? trigonometric circle? ask chatgpt
+        - Trigonometry
+        - Weekend flag
         - UTC, get DLS in hour data or just categorize
         - How to categorize date, year/timeofyear, month/day of month (for august), weekday, hour/min...
         - Fourrier stuff? how to best extract seasonality? Prophet can do or other?
@@ -25,9 +27,10 @@
         - No lagged day value because of whole year? Estimate other model then takes its output as input for NN?
         - Holidays, single holiday
     - Meteo
-        - De base regrouper les régions en faisant moyenne classique, plus tard regrouper en faisant moyenne pondérée par pop des départements?
-        - Onehotenc: Mountain, seaside, ...
-        - Température ressentie, lissage exponentiel en feature engineering (temp passée, vent, humidité, ensolleillement)
+        - Ajouter precipitations, neige?
+        <!-- - De base regrouper les régions en faisant moyenne classique, plus tard regrouper en faisant moyenne pondérée par pop des départements? -->
+        <!-- - Onehotenc: Mountain, seaside, ... -->
+        <!-- - Température ressentie, lissage exponentiel en feature engineering (temp passée, vent, humidité, ensolleillement) -->
     - Feature scaling / categorizing check, passer les colonnes en bool si nécessaire
     - Round les values?
 - Do not forget:
@@ -42,3 +45,5 @@
 - Goal:
     - Predict electricity consumption for each zone (France, regions, metropoles) for the whole 2022 year (every 30 min).
     - Loss: RMSE
+- Our features:
+    - ...
