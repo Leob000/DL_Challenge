@@ -24,6 +24,7 @@
         - Lagged year -1, ..., -n values?
         - No lagged day value because of whole year? Estimate other model then takes its output as input for NN?
         - Holidays, single holiday + before/after shift
+        - August flag?
     - Meteo
         - Ajouter precipitations, neige?
         <!-- - De base regrouper les régions en faisant moyenne classique, plus tard regrouper en faisant moyenne pondérée par pop des départements? -->
