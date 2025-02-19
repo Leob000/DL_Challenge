@@ -3,7 +3,7 @@ data/
 docu_cours/
 test.py
 TODO.md
-simple_model.py
+old_model.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
