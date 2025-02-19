@@ -3,8 +3,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-# %%
-df = pd.read_parquet("data/clean_data.parquet")
+COLLAB = False
+if COLLAB:
+    from google.colab import drive
+
+    drive.mount("/content/drive")
+    df = pd.read_parquet("drive/MyDrive/data/clean_data.parquet")
+else:
+    df = pd.read_parquet("data/clean_data.parquet")
 # %%
 # On normalise les variables continues, on choisit pour l'instant de normaliser par région
 # On garde en liste les moyennes et std des Loads des différentes régions
@@ -86,7 +92,16 @@ y_train = df_train["Load"].to_numpy(dtype="float32")
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import root_mean_squared_error
 
-model = MLPRegressor(hidden_layer_sizes=(100, 75, 50), verbose=True, random_state=42)
+# Seed 42 sauf si précisé
+# MLP 50
+# err_train: 4970.189566458095 err_val: 5305.83536908326
+# MLP (100,75,50) alpha=0.0001 12m
+# err_train: 3520.0179453667292 err_val: 5566.213886271534
+# MLP (100,75,50) alpha=0.0005 12m
+# err_train: 3562.9267325270466 err_val: 5432.463928511991
+model = MLPRegressor(
+    hidden_layer_sizes=(100, 75, 50), alpha=0.0005, verbose=True, random_state=42
+)
 # %%
 model.fit(X_train, y_train)
 
@@ -125,17 +140,7 @@ err_train = err(df_train_result, "Load", "Load_pred")
 err_val = err(df_val_result, "Load", "Load_pred")
 print("err_train:", err_train, "err_val:", err_val)
 # %%
-plt.rcParams["figure.figsize"] = [10, 5]
-plt.plot(
-    df_val_result.loc[df_val_result["zone_France"] == 1, "Load"], linewidth=1, alpha=0.8
-)
-plt.plot(
-    df_val_result.loc[df_val_result["zone_France"] == 1, "Load_pred"],
-    linewidth=1,
-    alpha=0.8,
-)
-plt.show()
-
+# Train plot
 plt.plot(
     df_train_result.loc[df_train_result["zone_France"] == 1, "Load"],
     linewidth=1,
@@ -147,6 +152,16 @@ plt.plot(
     alpha=0.8,
 )
 plt.show()
+
+# Val plot
+plt.rcParams["figure.figsize"] = [10, 5]
+plt.plot(
+    df_val_result.loc[df_val_result["zone_France"] == 1, "Load"], linewidth=1, alpha=0.8
+)
+plt.plot(
+    df_val_result.loc[df_val_result["zone_France"] == 1, "Load_pred"],
+    linewidth=1,
+    alpha=0.8,
+)
+plt.show()
 # %%
-model.n_layers_
-# (100,) err_train: 4970.189566458095 err_val: 5305.83536908326
