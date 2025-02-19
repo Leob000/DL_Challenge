@@ -6,9 +6,9 @@ import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
-COLLAB = False
-FULL_TRAIN = True
-if COLLAB:
+COLAB = False  # Si utilisation de google colab
+FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
+if COLAB:
     from google.colab import drive
 
     drive.mount("/content/drive")
@@ -17,7 +17,7 @@ else:
     df = pd.read_parquet("data/clean_data.parquet")
 # %%
 # On normalise les variables continues, on choisit pour l'instant de normaliser par région
-# On garde en liste les moyennes et std des Loads des différentes régions
+# On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
 li_zones = [col for col in df.columns if col.startswith("zone_")]
 li_norm = [
     "Load",
@@ -29,7 +29,7 @@ li_norm = [
     "tc_ewm15_max24h",
     "tc_ewm15_min24h",
 ]
-# %%
+
 li_load = []
 for zone in li_zones:
     for feature in li_norm:
@@ -54,6 +54,7 @@ def rescale(dff, col):
 
 
 # %%
+# Création des X/y train/test
 if FULL_TRAIN:
     df_train = df[df.index < "2022"]
     df_test = df[df.index >= "2022"]
@@ -69,11 +70,13 @@ y_test = df_test["Load"].to_numpy(dtype="float32")
 
 
 # %%
+# Importation du modèle
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import root_mean_squared_error
 
 # Seed 42 sauf si précisé
-# MLP 50
+# VALIDATION TRAIN
+# MLP (50)
 # err_train: 4970.189566458095 err_val: 5305.83536908326
 # MLP (100,75,50) alpha=0.0001 12m
 # err_train: 3520.0179453667292 err_val: 5566.213886271534
@@ -87,7 +90,7 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3266.782885785861 err_val: 5571.2599459496205
 
 # FULL TRAIN
-# MLP (100,75,50), alpha=0.001
+# MLP (100,75,50), alpha=0.001 15m
 # err_train: 3790.3653802664085 PUBLIC 7800.42
 
 model = MLPRegressor(
@@ -98,11 +101,13 @@ model = MLPRegressor(
     random_state=42,
 )
 # %%
+# On train le modèle
 model.fit(X_train, y_train)
-os.system('say "Training complete"')
+os.system('say "Wake up wake up, training complete!"')
 
 
 # %%
+# On récupère les prédictions sur train/test et on les formate en pandas
 def get_df_result(dff, X_to_test):
     df_temp = pd.merge(
         dff.reset_index(),
@@ -120,6 +125,7 @@ df_test_result = get_df_result(df_test, X_test)
 
 
 # %%
+# Calcul de l'erreur train +- test si FULL_TRAIN ou non
 def err(dff, col_true, col_pred):
     sum = 0
     for zone in li_zones:
@@ -160,7 +166,7 @@ else:
     plot_pred(df_train_result, zone_to_plot)
     plot_pred(df_test_result, zone_to_plot)
 # %%
-# Output vers un csv du format demandé
+# Output des prédictions vers un csv du format demandé
 if FULL_TRAIN:
     to_keep = li_zones.copy()
     to_keep.append("Load_pred")
