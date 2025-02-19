@@ -18,14 +18,12 @@
     - 🔥 Check other variables from Goude project, especially variables from EDF formula
     - Date
         - Categorize: Categorize month, day, hour? trigonometric circle? ask chatgpt
-        - Trigonometry
-        - Weekend flag
         - UTC, get DLS in hour data or just categorize
         - How to categorize date, year/timeofyear, month/day of month (for august), weekday, hour/min...
         - Fourrier stuff? how to best extract seasonality? Prophet can do or other?
         - Lagged year -1, ..., -n values?
         - No lagged day value because of whole year? Estimate other model then takes its output as input for NN?
-        - Holidays, single holiday
+        - Holidays, single holiday + before/after shift
     - Meteo
         - Ajouter precipitations, neige?
         <!-- - De base regrouper les régions en faisant moyenne classique, plus tard regrouper en faisant moyenne pondérée par pop des départements? -->
