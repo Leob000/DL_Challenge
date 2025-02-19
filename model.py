@@ -86,6 +86,10 @@ from sklearn.metrics import root_mean_squared_error
 # MLP (160,80,70,50) tol=0.00005 alpha=0.001 36m
 # err_train: 3266.782885785861 err_val: 5571.2599459496205
 
+# FULL TRAIN
+# MLP (100,75,50), alpha=0.001
+# err_train: 3790.3653802664085 PUBLIC 7800.42
+
 model = MLPRegressor(
     hidden_layer_sizes=(100, 75, 50),
     # tol=0.00005,
