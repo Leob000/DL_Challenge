@@ -2,11 +2,12 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
 COLLAB = False
-FULL_TRAIN = False
+FULL_TRAIN = True
 if COLLAB:
     from google.colab import drive
 
@@ -94,6 +95,7 @@ model = MLPRegressor(
 )
 # %%
 model.fit(X_train, y_train)
+os.system('say "Training complete"')
 
 
 # %%
@@ -126,10 +128,11 @@ def err(dff, col_true, col_pred):
 
 
 err_train = err(df_train_result, "Load", "Load_pred")
-print("err_train:", err_train)
-if not FULL_TRAIN:
+if FULL_TRAIN:
+    print("err_train:", err_train)
+else:
     err_test = err(df_test_result, "Load", "Load_pred")
-    print("err_test", err_test)
+    print("err_train:", err_train, "err_test", err_test)
 
 
 # %%
@@ -147,7 +150,7 @@ def plot_pred(dff, zone):
 
 plot_pred(df_train_result, "zone_France")
 if not FULL_TRAIN:
-    plot_pred[df_test_result, "zone_France"]
+    plot_pred(df_test_result, "zone_France")
 
 # %%
 # Output vers un csv du format demandé
@@ -211,3 +214,5 @@ if FULL_TRAIN:
         df_temp.groupby("date")[desired_order].sum().reset_index().set_index("date")
     )
     result.to_csv("data/pred.csv")
+
+# %%
