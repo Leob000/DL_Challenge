@@ -107,8 +107,7 @@ def get_df_result(dff, X_to_test):
         right_index=True,
     )
     rescale(df_temp, "Load_pred")
-    if not FULL_TRAIN:
-        rescale(df_temp, "Load")
+    rescale(df_temp, "Load")
     return df_temp
 
 
@@ -137,8 +136,9 @@ else:
 
 # %%
 # Plot du train et du test
-def plot_pred(dff, zone):
-    plt.plot(dff.loc[dff[zone] == 1, "Load"], linewidth=1, alpha=0.8)
+def plot_pred(dff, zone, load=True):
+    if load:
+        plt.plot(dff.loc[dff[zone] == 1, "Load"], linewidth=1, alpha=0.8)
     plt.plot(
         dff.loc[dff[zone] == 1, "Load_pred"],
         linewidth=1,
@@ -148,10 +148,13 @@ def plot_pred(dff, zone):
     plt.show()
 
 
-plot_pred(df_train_result, "zone_France")
-if not FULL_TRAIN:
-    plot_pred(df_test_result, "zone_France")
-
+zone_to_plot = "zone_France"
+if FULL_TRAIN:
+    plot_pred(df_train_result, zone_to_plot)
+    plot_pred(df_test_result, zone_to_plot, load=False)
+else:
+    plot_pred(df_train_result, zone_to_plot)
+    plot_pred(df_test_result, zone_to_plot)
 # %%
 # Output vers un csv du format demandé
 if FULL_TRAIN:
