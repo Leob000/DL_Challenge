@@ -1,6 +1,5 @@
 # %%
 import pandas as pd
-import missingno as msno
 import matplotlib.pyplot as plt
 import numpy as np
 import holidays
