@@ -28,6 +28,7 @@ li_norm = [
     "tc_ewm15_max24h",
     "tc_ewm15_min24h",
 ]
+# %%
 li_load = []
 for zone in li_zones:
     for feature in li_norm:
@@ -114,15 +115,6 @@ df_test_result = get_df_result(df_test, X_test)
 
 
 # %%
-# TODO setup truc automatique pour sortir format pour upload sur le site
-if not FULL_TRAIN:
-    to_keep = li_zones
-    to_keep.append("Load_pred")
-    df_test_result.set_index("date")
-    to_keep
-
-
-# %%
 def err(dff, col_true, col_pred):
     sum = 0
     for zone in li_zones:
@@ -134,11 +126,14 @@ def err(dff, col_true, col_pred):
 
 
 err_train = err(df_train_result, "Load", "Load_pred")
-err_val = err(df_test_result, "Load", "Load_pred")
-print("err_train:", err_train, "err_val:", err_val)
+print("err_train:", err_train)
+if not FULL_TRAIN:
+    err_test = err(df_test_result, "Load", "Load_pred")
+    print("err_test", err_test)
 
 
 # %%
+# Plot du train et du test
 def plot_pred(dff, zone):
     plt.plot(dff.loc[dff[zone] == 1, "Load"], linewidth=1, alpha=0.8)
     plt.plot(
@@ -150,8 +145,69 @@ def plot_pred(dff, zone):
     plt.show()
 
 
-# Train and valplot
-for i in [df_train_result, df_test_result]:
-    plot_pred(i, "zone_Grenoble")
+plot_pred(df_train_result, "zone_France")
+if not FULL_TRAIN:
+    plot_pred[df_test_result, "zone_France"]
 
 # %%
+# Output vers un csv du format demandé
+if FULL_TRAIN:
+    to_keep = li_zones.copy()
+    to_keep.append("Load_pred")
+    to_keep.append("date")
+    df_temp = df_test_result[to_keep]
+
+    rename_mapping = {
+        "zone_Montpellier": "pred_Montpellier Méditerranée Métropole",
+        "zone_Lille": "pred_Métropole Européenne de Lille",
+        "zone_Grenoble": "pred_Métropole Grenoble-Alpes-Métropole",
+        "zone_Nice": "pred_Métropole Nice Côte d'Azur",
+        "zone_Rennes": "pred_Métropole Rennes Métropole",
+        "zone_Rouen": "pred_Métropole Rouen Normandie",
+        "zone_Marseille": "pred_Métropole d'Aix-Marseille-Provence",
+        "zone_Lyon": "pred_Métropole de Lyon",
+        "zone_Nancy": "pred_Métropole du Grand Nancy",
+        "zone_Paris": "pred_Métropole du Grand Paris",
+        "zone_Nantes": "pred_Nantes Métropole",
+        "zone_Toulouse": "pred_Toulouse Métropole",
+    }
+
+    for zone in li_zones:
+        if zone in rename_mapping:
+            new_col = rename_mapping[zone]
+        else:
+            new_col = "pred_" + zone.split("_", 1)[1]
+        df_temp[new_col] = df_temp["Load_pred"] * df_temp[zone]
+
+    desired_order = [
+        "pred_France",
+        "pred_Auvergne-Rhône-Alpes",
+        "pred_Bourgogne-Franche-Comté",
+        "pred_Bretagne",
+        "pred_Centre-Val de Loire",
+        "pred_Grand Est",
+        "pred_Hauts-de-France",
+        "pred_Normandie",
+        "pred_Nouvelle-Aquitaine",
+        "pred_Occitanie",
+        "pred_Pays de la Loire",
+        "pred_Provence-Alpes-Côte d'Azur",
+        "pred_Île-de-France",
+        "pred_Montpellier Méditerranée Métropole",
+        "pred_Métropole Européenne de Lille",
+        "pred_Métropole Grenoble-Alpes-Métropole",
+        "pred_Métropole Nice Côte d'Azur",
+        "pred_Métropole Rennes Métropole",
+        "pred_Métropole Rouen Normandie",
+        "pred_Métropole d'Aix-Marseille-Provence",
+        "pred_Métropole de Lyon",
+        "pred_Métropole du Grand Nancy",
+        "pred_Métropole du Grand Paris",
+        "pred_Nantes Métropole",
+        "pred_Toulouse Métropole",
+    ]
+
+    result = (
+        df_temp.groupby("date")[desired_order].sum().reset_index().set_index("date")
+    )
+    result.to_csv("data/pred.csv")
