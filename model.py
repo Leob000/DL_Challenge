@@ -17,33 +17,7 @@ else:
 # %%
 # On normalise les variables continues, on choisit pour l'instant de normaliser par région
 # On garde en liste les moyennes et std des Loads des différentes régions
-li_zones = [
-    "zone_Auvergne-Rhône-Alpes",
-    "zone_Bourgogne-Franche-Comté",
-    "zone_Bretagne",
-    "zone_Centre-Val de Loire",
-    "zone_France",
-    "zone_Grand Est",
-    "zone_Grenoble",
-    "zone_Hauts-de-France",
-    "zone_Lille",
-    "zone_Lyon",
-    "zone_Marseille",
-    "zone_Montpellier",
-    "zone_Nancy",
-    "zone_Nantes",
-    "zone_Nice",
-    "zone_Normandie",
-    "zone_Nouvelle-Aquitaine",
-    "zone_Occitanie",
-    "zone_Paris",
-    "zone_Pays de la Loire",
-    "zone_Provence-Alpes-Côte d'Azur",
-    "zone_Rennes",
-    "zone_Rouen",
-    "zone_Toulouse",
-    "zone_Île-de-France",
-]
+li_zones = [col for col in df.columns if col.startswith("zone_")]
 li_norm = [
     "Load",
     "ff",
@@ -141,17 +115,11 @@ df_test_result = get_df_result(df_test, X_test)
 
 # %%
 # TODO setup truc automatique pour sortir format pour upload sur le site
-# df_test_result.set_index("date").drop(
-#     columns=["Load", "ff", "tc", "u", "is_ville", "is_pays", "is_reg", "temp_below"]
-# )
-
-
-# %%
-df_train_result.loc[df_train_result["zone_France"] == 1, "Load"]
-df_train_result.loc[df_train_result["zone_France"] == 1, "Load_pred"]
-for zone in li_zones:
-    a = df_train_result.loc[df_train_result[zone] == 1, "Load"]
-    print(zone, a.shape)
+if not FULL_TRAIN:
+    to_keep = li_zones
+    to_keep.append("Load_pred")
+    df_test_result.set_index("date")
+    to_keep
 
 
 # %%
