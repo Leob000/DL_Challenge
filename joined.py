@@ -138,4 +138,8 @@ df2["is_holiday"] = df2.index.map(lambda x: x.date() in fr_holidays)
 df2.drop(columns=["minute_of_day", "dayofweek", "dayofyear"], inplace=True)
 df = df2.copy()
 # %%
-df2 = df.copy()
+# On transforme la colonne "zone" en multiples dummy features
+df = pd.get_dummies(df, columns=["zone"], prefix="zone")
+
+# %%
+df.to_parquet("data/clean_data.parquet", engine="pyarrow")
