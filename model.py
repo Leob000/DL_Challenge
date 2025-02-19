@@ -229,3 +229,7 @@ if FULL_TRAIN:
     result.to_csv("data/pred.csv")
 
 # %%
+import joblib
+
+joblib.dump(model, "models/MLP(100,75,50),alpha=0_001).joblib")
+# %%
