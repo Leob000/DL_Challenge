@@ -78,21 +78,19 @@ def rescale(dff, col):
 
 
 # %%
-if not FULL_TRAIN:
-    df_train = df[df.index < "2021"]
-    df_val = df[(df.index >= "2021") & (df.index < "2022")]
+if FULL_TRAIN:
+    df_train = df[df.index < "2022"]
     df_test = df[df.index >= "2022"]
-
-    X_train = df_train.drop(columns=["Load"]).to_numpy(dtype="float32")
-    y_train = df_train["Load"].to_numpy(dtype="float32")
-
-    X_val = df_val.drop(columns=["Load"]).to_numpy(dtype="float32")
-    y_val = df_val["Load"].to_numpy(dtype="float32")
-
-    X_test = df_test.drop(columns=["Load"]).to_numpy(dtype="float32")
-    y_test = df_test["Load"].to_numpy(dtype="float32")
 else:
-    
+    df_train = df[df.index < "2021"]
+    df_test = df[(df.index >= "2021") & (df.index < "2022")]
+
+X_train = df_train.drop(columns=["Load"]).to_numpy(dtype="float32")
+y_train = df_train["Load"].to_numpy(dtype="float32")
+
+X_test = df_test.drop(columns=["Load"]).to_numpy(dtype="float32")
+y_test = df_test["Load"].to_numpy(dtype="float32")
+
 
 # %%
 from sklearn.neural_network import MLPRegressor
@@ -122,32 +120,23 @@ model = MLPRegressor(
 # %%
 model.fit(X_train, y_train)
 
+
 # %%
-df_val_result = pd.merge(
-    df_val.reset_index(),
-    pd.DataFrame(model.predict(X_val), columns=["Load_pred"]),
-    left_index=True,
-    right_index=True,
-)
-rescale(df_val_result, "Load_pred")
-rescale(df_val_result, "Load")
+def get_df_result(dff, X_to_test):
+    df_temp = pd.merge(
+        dff.reset_index(),
+        pd.DataFrame(model.predict(X_to_test), columns=["Load_pred"]),
+        left_index=True,
+        right_index=True,
+    )
+    rescale(df_temp, "Load_pred")
+    if not FULL_TRAIN:
+        rescale(df_temp, "Load")
+    return df_temp
 
-df_train_result = pd.merge(
-    df_train.reset_index(),
-    pd.DataFrame(model.predict(X_train), columns=["Load_pred"]),
-    left_index=True,
-    right_index=True,
-)
-rescale(df_train_result, "Load_pred")
-rescale(df_train_result, "Load")
 
-df_test_result = pd.merge(
-    df_test.reset_index(),
-    pd.DataFrame(model.predict(X_test), columns=["Load_pred"]),
-    left_index=True,
-    right_index=True,
-)
-rescale(df_test_result, "Load_pred")
+df_train_result = get_df_result(df_train, X_train)
+df_test_result = get_df_result(df_test, X_test)
 
 
 # %%
@@ -155,6 +144,14 @@ rescale(df_test_result, "Load_pred")
 # df_test_result.set_index("date").drop(
 #     columns=["Load", "ff", "tc", "u", "is_ville", "is_pays", "is_reg", "temp_below"]
 # )
+
+
+# %%
+df_train_result.loc[df_train_result["zone_France"] == 1, "Load"]
+df_train_result.loc[df_train_result["zone_France"] == 1, "Load_pred"]
+for zone in li_zones:
+    a = df_train_result.loc[df_train_result[zone] == 1, "Load"]
+    print(zone, a.shape)
 
 
 # %%
@@ -169,7 +166,7 @@ def err(dff, col_true, col_pred):
 
 
 err_train = err(df_train_result, "Load", "Load_pred")
-err_val = err(df_val_result, "Load", "Load_pred")
+err_val = err(df_test_result, "Load", "Load_pred")
 print("err_train:", err_train, "err_val:", err_val)
 
 
@@ -186,5 +183,7 @@ def plot_pred(dff, zone):
 
 
 # Train and valplot
-for i in [df_train_result, df_val_result]:
+for i in [df_train_result, df_test_result]:
     plot_pred(i, "zone_Grenoble")
+
+# %%
