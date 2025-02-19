@@ -124,7 +124,10 @@ df2["cos_dayofyear"] = np.cos(2 * np.pi * df2["dayofyear"] / 365)
 # Flag weekend
 df2["is_weekend"] = (df2["dayofweek"] == 5) | (df2["dayofweek"] == 6)
 
+# Flag winter hour
+df2["winter_hour"] = df2.index.map(
+    lambda dt: 1 if dt.utcoffset() == pd.Timedelta(hours=1) else 0
+)
+
 df = df2.copy()
 # %%
-df2 = df.copy()
-df2
