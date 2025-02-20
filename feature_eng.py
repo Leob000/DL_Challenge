@@ -109,6 +109,10 @@ df = df2.copy()
 # Feature eng: Dates
 df2 = df.copy()
 
+# August and (July or August) flags
+df2["is_august"] = df2.index.month == 8
+df2["is_july_or_august"] = (df2.index.month == 8) | (df2.index.month == 7)
+
 # Trigonometry circles
 df2["minute_of_day"] = df2.index.hour * 60 + df2.index.minute
 df2["sin_time"] = np.sin(2 * np.pi * df2["minute_of_day"] / 1440)
