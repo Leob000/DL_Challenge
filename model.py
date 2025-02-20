@@ -83,12 +83,15 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3520.0179453667292 err_val: 5566.213886271534
 # MLP (100,75,50) alpha=0.0005 12m
 # err_train: 3562.9267325270466 err_val: 5432.463928511991
-# MLP (100,75,50) alpha=0.001 17m colab
+# MLP (100,75,50) alpha=0.001 17m colab ********************************
 # err_train: 3572.5110659410075 err_val: 5384.728522402602
 # MLP (150,75,50) alpha=0.001 11m
 # err_train: 3434.437815640683 err_val: 5599.2871695679
 # MLP (160,80,70,50) tol=0.00005 alpha=0.001 36m
 # err_train: 3266.782885785861 err_val: 5571.2599459496205
+### Ajout rr1
+# MLP (100,75,50) alpha=0.001 3m ********************************
+# err_train: 3253.215070418089 err_test 4751.342492175332
 
 # FULL TRAIN
 # MLP (100,75,50), alpha=0.001 15m ******************************* Best
