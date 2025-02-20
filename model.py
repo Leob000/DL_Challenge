@@ -30,6 +30,7 @@ li_norm = [
     "tc_ewm15_min24h",
 ]
 
+# Scaling standardization
 li_load = []
 for zone in li_zones:
     for feature in li_norm:
@@ -229,7 +230,6 @@ if FULL_TRAIN:
     result.to_csv("data/pred.csv")
 
 # %%
-import joblib
-
-joblib.dump(model, "models/MLP(100,75,50),alpha=0_001).joblib")
+# import joblib
+# joblib.dump(model, "models/MLP(100,75,50),alpha=0_001).joblib")
 # %%
