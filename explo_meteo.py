@@ -6,7 +6,7 @@ import utils
 from scipy.spatial import distance
 
 #!%matplotlib inline
-OPTION_FULL_ANALYSIS = False
+FULL_ANALYSIS = False
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -40,7 +40,8 @@ villes_loc = pd.read_csv("data/villes_loc.csv")
 tuple_villes = (villes_loc["Longitude"], villes_loc["Latitude"], villes_loc["Ville"])
 
 # Voir la fonction pour afficher sur la carte dans utils.py
-utils.plot_france_map(tuple_stations, tuple_villes)
+if FULL_ANALYSIS:
+    utils.plot_france_map(tuple_stations, tuple_villes)
 
 # %%
 # Distance euclidienne pour chaque ville aux stations, on trouve la station la
@@ -66,12 +67,13 @@ closest_stations = {
 grenoble_distances = [d for d in distances if d[0] == "Grenoble"]
 closest_stations["Grenoble"] = sorted(grenoble_distances, key=lambda x: x[2])[:3]
 
-for ville, station_info in closest_stations.items():
-    if ville == "Grenoble":
-        for station in station_info:
-            print(ville, ":", station[3])
-    else:
-        print(ville, ":", station_info[3])
+if FULL_ANALYSIS:
+    for ville, station_info in closest_stations.items():
+        if ville == "Grenoble":
+            for station in station_info:
+                print(ville, ":", station[3])
+        else:
+            print(ville, ":", station_info[3])
 
 # %%
 # On peut étudier le nombre de NaN pour chaque feature
@@ -86,6 +88,7 @@ cols_essential = [
     "ff",  # vitesse vent 10mn
     "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
     "u",  # humidité
+    "rr1",  # précipitations dans la dernière heure
 ]
 # Les variables potentiellement utiles:
 cols_doubt = [
@@ -93,8 +96,7 @@ cols_doubt = [
     "temps_present",  # descri temps, idem que ww
     "n",  # utile mais bcp de NaN
     "nbas",  # idem, moins de NaN que n
-    "ht_neige",  # garder?
-    "rr1",  # garder? précipitations dans la dernière heure, passer en 30min?
+    "ht_neige",  # trop de NaN
     "raf10",  # rafales sur les 10mn, très corrélé avec ff, avec un peu plus de NaN
     "rafper",  # rafales sur la période? du coup avoir per aussi?
 ]
@@ -108,30 +110,32 @@ cols_geo = [
 df = df[cols_essential + cols_geo]
 df.isna().mean().sort_values()
 # %%
-df["altitude"].value_counts().sort_index()
-# %%
 # On étudie comment sont répartis les NaN
-msno.matrix(df.loc[:, df.isna().mean() > 0])
-# df[cols_to_keep].corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+# On remarque sur la matrice de corrélation des variables choisies qu'elles ne semblent pas très corrélées, ce qui est plutôt bon, elles apportent de l'information différente
+if FULL_ANALYSIS:
+    msno.matrix(df.loc[:, df.isna().mean() > 0])
+    plt.show()
+    print(df[cols_essential].corr())
 # %%
 # Vent, temp et humidité par département
-df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
+if FULL_ANALYSIS:
+    df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
 # %%
 # Nombre de NaN par variable, par département
-df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
+if FULL_ANALYSIS:
+    df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
 
 # %%
 # Bcp de NaN pour le Var
 # On l'élimine car on a pas les valeurs pour le test set
 depts = df["nom_dept"].unique().tolist()
-if OPTION_FULL_ANALYSIS:
+if FULL_ANALYSIS:
     for dept in depts:
         print(dept)
         msno.matrix(df[df["nom_dept"] == dept])
         plt.show()
 
 df = df[df["nom_dept"] != "Var"]
-df.groupby(["nom_dept"])[cols_essential].mean()
 
 # %%
 # On met le même index que train+test geo dataset, on inteprole pour passer d'intervalle 3h à 30min
@@ -155,7 +159,7 @@ for dept in depts:
 df_list
 df = pd.concat(df_list)
 # %%
-# Regrouper les valeurs par pays
+# On créé une nouvelle feature `France` qui regroupe la moyenne de toutes les stations
 df2 = df.copy()
 df2 = df2.drop(columns="altitude")
 df_france = df2.groupby(df2.index)[cols_essential].mean()
@@ -168,7 +172,7 @@ df = df2.copy()
 df2["is_pays"].value_counts(dropna=False)
 
 # %%
-# Regrouper par régions
+# On créé une nouvelle feature par région, faisant la moyenne valeurs des stations de cette région
 df2 = df.copy()
 regions = df2["nom_reg"].unique().tolist()
 regions = [x for x in regions if x == x]  # Retire le nan
@@ -185,7 +189,7 @@ df = df2.copy()
 df2["is_reg"].value_counts(dropna=False)
 
 # %%
-# On renomme les stations pour les villes qui correpondent, en faisant la moyenne pour Grenoble
+# On associe les stations aux villes qui correspondent, en faisant une moyenne pour Grenoble
 df2 = df.copy()
 ville_dept = [
     ("Montpellier", "Hérault"),
@@ -217,24 +221,24 @@ df = df2.copy()
 df2["is_ville"].value_counts(dropna=False)
 
 # %%
+# On élimine les anciennes features pour chaque station,
 # On ne garde que les observations soit pays, soit region, soit ville
 li_is = ["is_pays", "is_reg", "is_ville"]
 df["is_pays"] = df["is_pays"].fillna(0)
 df["is_reg"] = df["is_reg"].fillna(0)
-if OPTION_FULL_ANALYSIS:
+if FULL_ANALYSIS:
     for i in li_is:
         print(df[i].value_counts(dropna=False))
 
 df = df[(df["is_pays"] == 1) | (df["is_reg"] == 1) | (df["is_ville"] == 1)]
 
-if OPTION_FULL_ANALYSIS:
+if FULL_ANALYSIS:
     for i in li_is:
         print(df.loc[df[i] == 1]["zone"].value_counts(dropna=False))
 
 df = df.drop(columns=["nom_dept", "nom_reg"])
 # %%
-# Faire feature engineering après le join
-df[df["is_reg"] == 1]["zone"].value_counts()
+# df[df["is_reg"] == 1]["zone"].value_counts()
 df.to_parquet("data/meteo_tweaked.parquet", engine="pyarrow")
 
 # %%
