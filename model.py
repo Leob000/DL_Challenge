@@ -7,6 +7,8 @@ plt.rcParams["figure.figsize"] = [10, 5]
 
 COLAB = False  # Si utilisation de google colab
 FULL_TRAIN = False  # True: pred sur 2022, False: pred sur 2021 (validation)
+STANDARDIZATION_PER_ZONE = False
+
 if COLAB:
     from google.colab import drive  # type: ignore
 
@@ -15,11 +17,10 @@ if COLAB:
 else:
     df = pd.read_parquet("data/clean_data.parquet")
 # %%
-# On normalise les variables continues, on choisit de normaliser par région
+# On normalise les variables continues
 # On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
 li_zones = [col for col in df.columns if col.startswith("zone_")]
 li_norm = [
-    "Load",
     "ff",
     "tc",
     "u",
@@ -30,22 +31,29 @@ li_norm = [
     "tc_ewm15_min24h",
 ]
 
-# Scaling standardization
+# Standardization per zone de "Load"
 li_load = []
 for zone in li_zones:
+    load_temp = (
+        zone,
+        df.loc[df[zone] == 1, "Load"].mean(),
+        df.loc[df[zone] == 1, "Load"].std(),
+    )
+    li_load.append(load_temp)
+    df.loc[df[zone] == 1, "Load"] = (
+        df.loc[df[zone] == 1, "Load"] - df.loc[df[zone] == 1, "Load"].mean()
+    ) / df.loc[df[zone] == 1, "Load"].std()
+
+# Standardization of the rest, per zone or globally
+if STANDARDIZATION_PER_ZONE:
+    for zone in li_zones:
+        for feature in li_norm:
+            df.loc[df[zone] == 1, feature] = (
+                df.loc[df[zone] == 1, feature] - df.loc[df[zone] == 1, feature].mean()
+            ) / df.loc[df[zone] == 1, feature].std()
+else:
     for feature in li_norm:
-        if feature == "Load":
-            Load_mean = (zone, df.loc[df[zone] == 1, feature].mean())
-            Load_sd = (zone, df.loc[df[zone] == 1, feature].std())
-            load_temp = (
-                zone,
-                df.loc[df[zone] == 1, feature].mean(),
-                df.loc[df[zone] == 1, feature].std(),
-            )
-            li_load.append(load_temp)
-        df.loc[df[zone] == 1, feature] = (
-            df.loc[df[zone] == 1, feature] - df.loc[df[zone] == 1, feature].mean()
-        ) / df.loc[df[zone] == 1, feature].std()
+        df[feature] = (df[feature] - df[feature].mean()) / df[feature].std()
 
 
 # Fonction à utilier plus tard pour rescale
