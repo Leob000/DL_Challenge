@@ -10,10 +10,10 @@ OPTION_FULL_ANALYSIS = False
 df_geo = pd.read_parquet("data/geo_tweaked.parquet")
 df_meteo = pd.read_parquet("data/meteo_tweaked.parquet")
 # %%
+# On stocke les noms de regions et villes pour plus tard
 regions = df_meteo.loc[df_meteo["is_reg"] == 1]["zone"].unique().tolist()
 villes = df_meteo.loc[df_meteo["is_ville"] == 1]["zone"].unique().tolist()
 
-# %%
 df_meteo = df_meteo.drop(columns=["is_pays", "is_reg", "is_ville"])
 df_meteo = df_meteo.reset_index(names="date")
 # %%
@@ -56,6 +56,7 @@ df = pd.concat([df_no_NaN, df[df["date"] >= "2022"]])
 # msno.matrix(df) # Visu
 
 # %%
+# On recréé les flags indicateurs de pays, région, ville
 for ville in villes:
     df.loc[df["zone"] == ville, "is_ville"] = 1
 df["is_ville"] = df["is_ville"].fillna(0)
@@ -70,7 +71,7 @@ df["is_reg"] = df["is_reg"].fillna(0)
 df["is_pays"] = df["is_pays"].fillna(0)
 
 # %%
-# Feature eng: Temp
+# Feature eng: Température
 # Temp flag <15 degrees celcius
 # Exponential smoothin, alpha=0.15/0.06, min/max 24h of exp smoothing 0.15
 df2 = df.copy()
@@ -140,7 +141,7 @@ df = df2.copy()
 # On transforme la colonne "zone" en multiples dummy features
 df = pd.get_dummies(df, columns=["zone"], prefix="zone")
 # %%
-# On toutes les variables catégorielles en bool
+# On met toutes les variables catégorielles en bool
 li_bool = ["is_ville", "is_reg", "is_pays", "winter_hour"]
 for col in li_bool:
     # print(df2[col].value_counts(dropna=False))
@@ -149,3 +150,5 @@ for col in li_bool:
 
 # %%
 df.to_parquet("data/clean_data.parquet", engine="pyarrow")
+
+# %%
