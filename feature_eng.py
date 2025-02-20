@@ -53,7 +53,7 @@ print(df.shape)
 # On drop les rows qui n'ont pas de valeur de conso
 df_no_NaN = df[df["date"] < "2022"].dropna()
 df = pd.concat([df_no_NaN, df[df["date"] >= "2022"]])
-# msno.matrix(df) # Visu
+df.isna().mean()
 
 # %%
 # On recréé les flags indicateurs de pays, région, ville
