@@ -1,22 +1,21 @@
 # %%
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
 COLAB = False  # Si utilisation de google colab
-FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
+FULL_TRAIN = False  # True: pred sur 2022, False: pred sur 2021 (validation)
 if COLAB:
-    from google.colab import drive
+    from google.colab import drive  # type: ignore
 
     drive.mount("/content/drive")
     df = pd.read_parquet("drive/MyDrive/data/clean_data.parquet")
 else:
     df = pd.read_parquet("data/clean_data.parquet")
 # %%
-# On normalise les variables continues, on choisit pour l'instant de normaliser par région
+# On normalise les variables continues, on choisit de normaliser par région
 # On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
 li_zones = [col for col in df.columns if col.startswith("zone_")]
 li_norm = [
@@ -24,6 +23,7 @@ li_norm = [
     "ff",
     "tc",
     "u",
+    "rr1",
     "tc_ewm15",
     "tc_ewm06",
     "tc_ewm15_max24h",
@@ -91,7 +91,7 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3266.782885785861 err_val: 5571.2599459496205
 
 # FULL TRAIN
-# MLP (100,75,50), alpha=0.001 15m
+# MLP (100,75,50), alpha=0.001 15m ******************************* Best
 # err_train: 3790.3653802664085 PUBLIC 7800.42
 
 model = MLPRegressor(
