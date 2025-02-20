@@ -153,7 +153,7 @@ for dept in depts:
     df_temp = df_temp.reindex(new_index)
     for col in ["nom_dept", "nom_reg", "altitude"]:
         df_temp[col] = df_temp[col].ffill().bfill()
-    for col in ["ff", "tc", "u"]:
+    for col in ["ff", "tc", "u", "rr1"]:
         df_temp[col] = df_temp[col].interpolate(method="time", limit_direction="both")
     df_list.append(df_temp)
 df_list
