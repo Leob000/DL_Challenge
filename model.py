@@ -6,8 +6,9 @@ import os
 plt.rcParams["figure.figsize"] = [10, 5]
 
 COLAB = False  # Si utilisation de google colab
-FULL_TRAIN = False  # True: pred sur 2022, False: pred sur 2021 (validation)
-STANDARDIZATION_PER_ZONE = False
+FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
+STANDARDIZATION_PER_ZONE = True
+DROP_AUGUSTS_FLAGS = True
 
 if COLAB:
     from google.colab import drive  # type: ignore
@@ -16,6 +17,9 @@ if COLAB:
     df = pd.read_parquet("drive/MyDrive/data/clean_data.parquet")
 else:
     df = pd.read_parquet("data/clean_data.parquet")
+# %%
+if DROP_AUGUSTS_FLAGS:
+    df = df.drop(columns=["is_august", "is_july_or_august"])
 # %%
 # On normalise les variables continues
 # On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
@@ -91,7 +95,7 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3520.0179453667292 err_val: 5566.213886271534
 # MLP (100,75,50) alpha=0.0005 12m
 # err_train: 3562.9267325270466 err_val: 5432.463928511991
-# MLP (100,75,50) alpha=0.001 17m colab ********************************
+# MLP (100,75,50) alpha=0.001 17m colab ******************************** same mode full train
 # err_train: 3572.5110659410075 err_val: 5384.728522402602
 # MLP (150,75,50) alpha=0.001 11m
 # err_train: 3434.437815640683 err_val: 5599.2871695679
@@ -100,10 +104,19 @@ from sklearn.metrics import root_mean_squared_error
 ### Ajout rr1
 # MLP (100,75,50) alpha=0.001 3m ********************************
 # err_train: 3253.215070418089 err_test 4751.342492175332
+# (one go) avec global norm err_train: 3200.0788533516843 err_test 4998.127239935056
+### Ajout August, August-July flags
+# err_train: 3162.0374756982874 err_test 4905.985489564879
+# MLP (100, 75, 50, 50) alpha=0.001
+# err_train: 3321.7738784810754 err_test 5601.2457404252
 
 # FULL TRAIN
 # MLP (100,75,50), alpha=0.001 15m ******************************* Best
 # err_train: 3790.3653802664085 PUBLIC 7800.42
+# Idem avec rr1, august-july flags
+# err_train: 3727.341889244235 PUBLIC 7862.66
+# Idem sans august_july flags
+# err_train: 3757.4073814148524 PUBLIC 7983.36
 
 model = MLPRegressor(
     hidden_layer_sizes=(100, 75, 50),
@@ -115,7 +128,7 @@ model = MLPRegressor(
 # %%
 # On train le modèle
 model.fit(X_train, y_train)
-os.system('say "Wake up wake up, training complete!"')
+os.system('say "Training complete"')
 
 
 # %%
@@ -178,7 +191,7 @@ else:
     plot_pred(df_train_result, zone_to_plot)
     plot_pred(df_test_result, zone_to_plot)
 # %%
-# Output des prédictions vers un csv du format demandé
+# Partie pour output les prédictions vers un csv du format demandé
 if FULL_TRAIN:
     to_keep = li_zones.copy()
     to_keep.append("Load_pred")
