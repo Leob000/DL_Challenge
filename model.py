@@ -18,6 +18,9 @@ if COLAB:
 else:
     df = pd.read_parquet("data/clean_data.parquet")
 # %%
+# On transforme la colonne "zone" en multiples dummy features
+df = pd.get_dummies(df, columns=["zone"], prefix="zone")
+# %%
 if DROP_AUGUSTS_FLAGS:
     df = df.drop(columns=["is_august", "is_july_or_august"])
 # %%
