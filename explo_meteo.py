@@ -76,11 +76,12 @@ if FULL_ANALYSIS:
             print(ville, ":", station_info[3])
 
 # %%
+# On met nbas en format numérique
+df["nbas"] = pd.to_numeric(df["nbas"])
+
 # On peut étudier le nombre de NaN pour chaque feature
 pd.set_option("display.max_rows", 500)
 df.isna().mean().sort_index()
-# On met nbas en format numérique
-df["nbas"] = pd.to_numeric(df["nbas"])
 # %%
 # On choisit ici les variables à garder, on va tester d'abord des modèles avec les variables essentielles
 # Les variables essentielles:
@@ -88,7 +89,8 @@ cols_essential = [
     "ff",  # vitesse vent 10mn
     "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
     "u",  # humidité
-    "rr1",  # précipitations dans la dernière heure
+    # "rr1",  # précipitations dans la dernière heure
+    "pres",  # pression au niveau de la stations
 ]
 # Les variables potentiellement utiles:
 cols_doubt = [
@@ -153,7 +155,7 @@ for dept in depts:
     df_temp = df_temp.reindex(new_index)
     for col in ["nom_dept", "nom_reg", "altitude"]:
         df_temp[col] = df_temp[col].ffill().bfill()
-    for col in ["ff", "tc", "u", "rr1"]:
+    for col in [cols_essential]:
         df_temp[col] = df_temp[col].interpolate(method="time", limit_direction="both")
     df_list.append(df_temp)
 df_list
