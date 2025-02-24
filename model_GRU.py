@@ -3,25 +3,75 @@ import pandas as pd
 import torch
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
+import matplotlib.pyplot as plt
+
 # %%
+plt.rcParams["figure.figsize"] = [10, 5]
 
-# Sample data in long format: each row is a time point for a given zone.
-data = {
-    "date": [
-        "2022-01-01 00:00",
-        "2022-01-01 00:30",
-        "2022-01-01 00:00",
-        "2022-01-01 00:30",
-    ],
-    "temp": [5, 6, 4, 3],
-    "consumption": [100, 110, 90, 95],
-    "zone": ["A", "A", "B", "B"],  # Zone identifier
-}
+COLAB = False  # Si utilisation de google colab
+FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
+STANDARDIZATION_PER_ZONE = True
+DROP_AUGUSTS_FLAGS = True
 
-# Create a DataFrame
-df = pd.DataFrame(data)
+if COLAB:
+    from google.colab import drive  # type: ignore
+
+    drive.mount("/content/drive")
+    df = pd.read_parquet("drive/MyDrive/data/clean_data.parquet")
+else:
+    df = pd.read_parquet("data/clean_data.parquet")
+# %%
+li_features = df.columns.to_list()
+li_features.remove("zone")
+li_features.remove("Load")
+li_features
+
+
+def get_zone_data(dataframe, target_col="Load"):
+    data_dict = {}
+    target_dict = {}
+    grouped = dataframe.groupby("zone")
+    for zone, group in grouped:
+        group_sorted = group.sort_index()
+        X = group_sorted[li_features].values
+        # For training/validation, y is available.
+        # For test, y might be NaN, so we'll only store X.
+        y = (
+            group_sorted[target_col].values
+            if group_sorted[target_col].notna().all()
+            else None
+        )
+
+        data_dict[zone] = torch.tensor(X, dtype=torch.float)
+        if y is not None:
+            target_dict[zone] = torch.tensor(y, dtype=torch.float)
+    return data_dict, target_dict
+
+
+if FULL_TRAIN:
+    df_train = df[df.index < "2022"]
+    df_test = df[df.index >= "2022"]
+else:
+    df_train = df[df.index < "2021"]
+    df_test = df[(df.index >= "2021") & (df.index < "2022")]
+    df_test.loc[:, "Load"] = None
+
+X_train, y_train = get_zone_data(df_train, target_col="Load")
+X_test, _ = get_zone_data(
+    df_test, target_col="Load"
+)  # test set: consumption is unknown
+
+# Example: printing the shapes
+for zone in X_train:
+    print(f"Train Zone {zone} sequence X shape: {X_train[zone].shape}")
+    print(f"Train Zone {zone} sequence y shape: {y_train[zone].shape}")
+
+for zone in X_test:
+    print(f"Test Zone {zone} sequence X shape: {X_test[zone].shape}")
+
+# %%
+#################### GPT example
 df["date"] = pd.to_datetime(df["date"])
-# %%
 
 # Group by zone and sort each group by date
 grouped = df.groupby("zone")
@@ -70,3 +120,5 @@ for zone, seq in sequences.items():
     print("  Hidden shape:", hidden.shape)  # (num_layers, 1, hidden_dim)
 
 # %%
+# TODO padding
+# TODO Dataloader?
