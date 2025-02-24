@@ -1,7 +1,7 @@
 # %%
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
+# import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
@@ -10,7 +10,7 @@ FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
 STANDARDIZATION_PER_ZONE = True
 DROP_AUGUSTS_FLAGS = True
 DROP_PRECIPITATIONS = True
-DROP_PRESSION = False
+DROP_PRESSION = True
 
 if COLAB:
     from google.colab import drive  # type: ignore
