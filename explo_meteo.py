@@ -89,7 +89,7 @@ cols_essential = [
     "ff",  # vitesse vent 10mn
     "tc",  # température celcius, pas besoin de garder les dérivés (min,max) de temp car bcp de NaN et déduisibles de tc
     "u",  # humidité
-    # "rr1",  # précipitations dans la dernière heure
+    "rr1",  # précipitations dans la dernière heure
     "pres",  # pression au niveau de la stations
 ]
 # Les variables potentiellement utiles:
