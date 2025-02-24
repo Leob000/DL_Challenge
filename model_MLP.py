@@ -9,6 +9,8 @@ COLAB = False  # Si utilisation de google colab
 FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
 STANDARDIZATION_PER_ZONE = True
 DROP_AUGUSTS_FLAGS = True
+DROP_PRECIPITATIONS = True
+DROP_PRESSION = False
 
 if COLAB:
     from google.colab import drive  # type: ignore
@@ -21,22 +23,34 @@ else:
 # On transforme la colonne "zone" en multiples dummy features
 df = pd.get_dummies(df, columns=["zone"], prefix="zone")
 # %%
-if DROP_AUGUSTS_FLAGS:
-    df = df.drop(columns=["is_august", "is_july_or_august"])
-# %%
-# On normalise les variables continues
-# On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
-li_zones = [col for col in df.columns if col.startswith("zone_")]
-li_norm = [
+# Feature selection, on drop ou non certaines features
+features_to_normalize = [
     "ff",
     "tc",
     "u",
-    "rr1",
     "tc_ewm15",
     "tc_ewm06",
     "tc_ewm15_max24h",
     "tc_ewm15_min24h",
 ]
+
+if DROP_AUGUSTS_FLAGS:
+    df = df.drop(columns=["is_august", "is_july_or_august"])
+
+if DROP_PRECIPITATIONS:
+    df = df.drop(columns=["rr1"])
+else:
+    features_to_normalize.append("rr1")
+
+if DROP_PRESSION:
+    df = df.drop(columns=["pres"])
+else:
+    features_to_normalize.append("pres")
+
+# %%
+# On normalise les variables continues
+# On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
+li_zones = [col for col in df.columns if col.startswith("zone_")]
 
 # Standardization per zone de "Load"
 li_load = []
@@ -54,12 +68,12 @@ for zone in li_zones:
 # Standardization of the rest, per zone or globally
 if STANDARDIZATION_PER_ZONE:
     for zone in li_zones:
-        for feature in li_norm:
+        for feature in features_to_normalize:
             df.loc[df[zone] == 1, feature] = (
                 df.loc[df[zone] == 1, feature] - df.loc[df[zone] == 1, feature].mean()
             ) / df.loc[df[zone] == 1, feature].std()
 else:
-    for feature in li_norm:
+    for feature in features_to_normalize:
         df[feature] = (df[feature] - df[feature].mean()) / df[feature].std()
 
 
@@ -124,7 +138,7 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3442.833907457593 PUBLIC 8000
 
 model = MLPRegressor(
-    hidden_layer_sizes=(100, 100, 100, 100, 100, 100),
+    hidden_layer_sizes=(100, 75, 50),
     # tol=0.00005,
     alpha=0.001,
     verbose=True,
@@ -133,7 +147,7 @@ model = MLPRegressor(
 # %%
 # On train le modèle
 model.fit(X_train, y_train)
-os.system('say "Training complete"')
+# os.system('say "Training complete"')
 
 
 # %%
