@@ -120,9 +120,11 @@ from sklearn.metrics import root_mean_squared_error
 # err_train: 3727.341889244235 PUBLIC 7862.66
 # Idem sans august_july flags
 # err_train: 3757.4073814148524 PUBLIC 7983.36
+# (100 x 6)
+# err_train: 3442.833907457593 PUBLIC 8000
 
 model = MLPRegressor(
-    hidden_layer_sizes=(100, 75, 50),
+    hidden_layer_sizes=(100, 100, 100, 100, 100, 100),
     # tol=0.00005,
     alpha=0.001,
     verbose=True,
