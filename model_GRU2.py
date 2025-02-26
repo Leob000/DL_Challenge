@@ -102,7 +102,11 @@ else:
 
 # %%
 class TimeSeriesDataset(Dataset):
-    def __init__(self, df, zone):
+    # input_size : fenêtre de données passées considérées par le GRU, ici 48 donc les dernières 24h
+    # horizon : Prochain data point estimé par le GRU, ici 1 donc juste la prochaine demie-heure
+    def __init__(self, df, zone, input_size=48, horizon=1):
+        self.input_size = input_size
+        self.horizon = horizon
         self.X = torch.tensor(
             df.loc[df["zone"] == zone]
             .drop(columns=["Load", "zone"])
@@ -113,11 +117,13 @@ class TimeSeriesDataset(Dataset):
         )
 
     def __len__(self):
-        return self.y.shape[0]
+        return self.y.shape[0] - self.input_size - self.horizon + 1
 
     def __getitem__(self, idx):
-        obs = self.X[idx, :]
-        label = self.y[idx]
+        obs = self.X[idx : idx + self.input_size]  # shape (input_size, nb_features)
+        label = self.y[
+            idx + self.input_size : idx + self.input_size + self.horizon
+        ]  # shape (horizon,)
         return obs, label
 
 
