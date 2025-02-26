@@ -1,7 +1,7 @@
 # %%
 import torch
 import pandas as pd
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 COLAB = False
 FULL_TRAIN = False
@@ -111,27 +111,19 @@ class TimeSeriesDataset(Dataset):
         self.y = torch.tensor(
             df.loc[df["zone"] == zone, "Load"].to_numpy(dtype="float32")
         )
-        # self.transform = transform
-        # self.target_transform = target_transform
 
     def __len__(self):
         return self.y.shape[0]
 
     def __getitem__(self, idx):
-        # TODO Implémanter les transfos des valeurs (norm), les options de drop de variables
-
         obs = self.X[idx, :]
         label = self.y[idx]
-
-        # if self.transform:
-        #     obs = self.transform(obs)
-        # if self.target_transform:
-        #     label = self.target_transform(label)
-
         return obs, label
 
 
 # %%
-test_dataset = TimeSeriesDataset(df_test, "Paris")
+train_dataset_France = TimeSeriesDataset(df_train, "France")
+test_dataset_France = TimeSeriesDataset(df_test, "France")
 # %%
-test_dataset.__getitem__(0)
+train_loader_France = DataLoader(train_dataset_France, batch_size=64, shuffle=True)
+test_loader_France = DataLoader(test_dataset_France, batch_size=64, shuffle=False)
