@@ -128,8 +128,12 @@ class TimeSeriesDataset(Dataset):
 
 
 # %%
-train_dataset_France = TimeSeriesDataset(df_train, "France")
-test_dataset_France = TimeSeriesDataset(df_test, "France")
+zone_to_test = "France"
+train_dataset = TimeSeriesDataset(df_train, zone_to_test)
+test_dataset = TimeSeriesDataset(df_test, zone_to_test)
+
+batch_size = 64
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
 # %%
-train_loader_France = DataLoader(train_dataset_France, batch_size=64, shuffle=True)
-test_loader_France = DataLoader(test_dataset_France, batch_size=64, shuffle=False)
