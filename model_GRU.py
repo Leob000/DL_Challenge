@@ -2,7 +2,7 @@
 import pandas as pd
 import torch
 from torch import nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader  # noqa: F401
 import matplotlib.pyplot as plt
 
 # %%
