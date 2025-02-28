@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import utils
 from scipy.spatial import distance
+import seaborn as sns
 
 #!%matplotlib inline
-FULL_ANALYSIS = False
+FULL_ANALYSIS = True
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -117,15 +118,23 @@ df.isna().mean().sort_values()
 if FULL_ANALYSIS:
     msno.matrix(df.loc[:, df.isna().mean() > 0])
     plt.show()
-    print(df[cols_essential].corr())
+    # print(df[cols_essential].corr())
+    corr_matrix = df[cols_essential].corr().round(2)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+    plt.show()
 # %%
 # Vent, temp et humidité par département
 if FULL_ANALYSIS:
-    df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean()
+    print(df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean())
 # %%
 # Nombre de NaN par variable, par département
 if FULL_ANALYSIS:
-    df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(lambda x: x.isna().sum())
+    print(
+        df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(
+            lambda x: x.isna().sum()
+        )
+    )
 
 # %%
 # Bcp de NaN pour le Var
