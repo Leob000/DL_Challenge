@@ -17,4 +17,4 @@ La version de python utilisée est la 3.12. Les packages requis sont trouvés da
 
 Attention, les données du challenge doivent être dans un dossier `data/`, les modèles sont sauvegardés et chargés à partir du dossier `models/`.
 
-Différentes options (affichage des graphiques, utilisation de colab, ...) sont possibles pour certains fichiers, et mises sous la forme de constantes booléennes au début de ceux-ci.
+Différentes options (affichage des graphiques, utilisation de colab, ...) sont possibles pour certains fichiers, et mises sous la forme de constantes booléennes au début de ceux-ci. Un fichier `utils.py` est utilisé pour le stockage de fonctions d'affichage géographique lors de l'exploration des données.
