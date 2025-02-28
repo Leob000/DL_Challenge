@@ -8,13 +8,13 @@ import torch.optim as optim
 
 COLAB = False
 
-FULL_TRAIN = True
+FULL_TRAIN = False
 
 BATCH_SIZE = 128
-SEQ_LENGTH = 48 * 3  # e.g., use past 24 hours (48 time-steps at 30min intervals)
+SEQ_LENGTH = 48 * 2  # e.g., use past 24 hours (48 time-steps at 30min intervals)
 HIDDEN_SIZE = 64 * 2  # LSTM
-NUM_LAYERS = 7  # LSTM
-EPOCHS = 1
+NUM_LAYERS = 14  # LSTM
+EPOCHS = 8
 CLIP_GRAD = False
 
 feature_cols = [
@@ -93,8 +93,9 @@ else:
     df_test = df[(df.index >= DATE_THRESHOLD) & (df.index < "2022")]
     df_test.loc[:, "Load"] = float("nan")  # On retire les y du test de validation
 # %%
-df_train_france = df_train.loc[(df_train["zone"] == "France")]
-df_test_france = df_test.loc[(df_test["zone"] == "France")]
+zone_a_test = "France"  # Attention incompatibilité plus tard si change ici
+df_train_france = df_train.loc[(df_train["zone"] == zone_a_test)]
+df_test_france = df_test.loc[(df_test["zone"] == zone_a_test)]
 
 
 # %%
@@ -223,7 +224,7 @@ def iterative_forecast(model, init_seq, future_exog, device):
 
 
 # %%
-
+# Training loop
 
 input_size = len(feature_cols)
 
