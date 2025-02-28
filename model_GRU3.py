@@ -6,13 +6,52 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import torch.optim as optim
 
+COLAB = False
+
 FULL_TRAIN = False
 
+BATCH_SIZE = 128
+SEQ_LENGTH = 48 * 2  # e.g., use past 24 hours (48 time-steps at 30min intervals)
+HIDDEN_SIZE = 64 * 2  # LSTM
+NUM_LAYERS = 7  # LSTM
+EPOCHS = 6
+
+feature_cols = [
+    "Load",
+    "tc",
+    "ff",
+    "u",
+    "tc_ewm15",
+    "tc_ewm06",
+    "tc_ewm15_max24h",
+    "tc_ewm15_min24h",
+    "temp_below_15",
+    "sin_time",
+    "cos_time",
+    "sin_dayofweek",
+    "cos_dayofweek",
+    "sin_dayofyear",
+    "cos_dayofyear",
+    "is_weekend",
+    "winter_hour",
+    "is_holiday",
+]
+
 # %%
-df = pd.read_parquet("data/clean_data.parquet")
-if torch.backends.mps.is_available():
-    device = torch.device("mps")  # MacOS GPU
-print(device)
+device = torch.device("cpu")
+if COLAB:
+    from google.colab import drive  # type: ignore
+
+    drive.mount("/content/drive")
+    df = pd.read_parquet("drive/MyDrive/data/clean_data.parquet")
+    if torch.cuda.is_available():
+        device = torch.device("cuda")  # Colab GPU
+else:
+    df = pd.read_parquet("data/clean_data.parquet")
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")  # MacOS GPU
+
+print("Device used:", device)
 # %%
 # On normalise les variables continues
 # On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
@@ -48,6 +87,8 @@ if FULL_TRAIN:
 else:
     df_train = df[df.index < "2021"]
     df_test = df[(df.index >= "2021") & (df.index < "2022")]
+    df_train = df[df.index < "2021-10"]
+    df_test = df[(df.index >= "2021-10") & (df.index < "2022")]
     df_test.loc[:, "Load"] = float("nan")  # On retire les y du test de validation
 # %%
 df_train_france = df_train.loc[(df_train["zone"] == "France")]
@@ -86,39 +127,18 @@ class TimeSeriesDataset(Dataset):
 
 # Suppose df is your preprocessed DataFrame (indexed by date) with columns including "Load" and exogenous features.
 # For illustration, assume:
-feature_cols = [
-    "Load",
-    "ff",
-    "tc",
-    "u",
-    "temp_below_15",
-    "tc_ewm15",
-    "tc_ewm06",
-    "tc_ewm15_max24h",
-    "tc_ewm15_min24h",
-    "sin_time",
-    "cos_time",
-    "sin_dayofweek",
-    "cos_dayofweek",
-    "sin_dayofyear",
-    "cos_dayofyear",
-    "is_weekend",
-    "winter_hour",
-    "is_holiday",
-]
 target_col = "Load"
-seq_length = 48  # e.g., use past 24 hours (48 time-steps at 30min intervals)
 
 
 # Create the training dataset and dataloader
-train_dataset = TimeSeriesDataset(df_train_france, seq_length, feature_cols, target_col)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+train_dataset = TimeSeriesDataset(df_train_france, SEQ_LENGTH, feature_cols, target_col)
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 # %%
 
 
 # 2. Define the LSTM Model
 class LSTMForecaster(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, dropout=0.05):
+    def __init__(self, input_size, hidden_size, num_layers, dropout=0.0):
         """
         input_size: number of input features (e.g., 1 (Load) + exogenous features).
         hidden_size: number of LSTM units.
@@ -152,7 +172,7 @@ def train_model(model, dataloader, optimizer, device):
         # RMSE loss: sqrt(MSE)
         loss = nn.MSELoss()(pred, y)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # TEST
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # TEST
         optimizer.step()
         total_loss += loss.item() * x.size(0)
     return total_loss / len(dataloader.dataset)
@@ -203,17 +223,14 @@ def iterative_forecast(model, init_seq, future_exog, device):
 
 
 input_size = len(feature_cols)
-hidden_size = 64
-num_layers = 7
 
-model = LSTMForecaster(input_size, hidden_size, num_layers, dropout=0.1).to(device)
+model = LSTMForecaster(input_size, HIDDEN_SIZE, NUM_LAYERS, dropout=0.0).to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 # Training loop (simplified)
-epochs = 6
-for epoch in range(epochs):
+for epoch in range(EPOCHS):
     loss = train_model(model, train_loader, optimizer, device)
-    print(f"Epoch {epoch + 1}/{epochs}, RMSE: {loss:.4f}")
+    print(f"Epoch {epoch + 1}/{EPOCHS}, RMSE: {loss:.4f}")
 
 # %%
 
@@ -221,33 +238,15 @@ for epoch in range(epochs):
 # Prepare the last observed window from your training or validation set.
 # For example, take the last seq_length entries of df_train_france.
 last_seq = torch.tensor(
-    df_train_france[feature_cols].to_numpy(dtype="float32")[-seq_length:],
+    df_train_france[feature_cols].to_numpy(dtype="float32")[-SEQ_LENGTH:],
     dtype=torch.float32,
 )
 # Prepare future exogenous features for the forecast horizon.
 # They should have shape (forecast_horizon, n_exog) where n_exog = input_size - 1.
 # Here, you already know the values for 2022.
-future_exog = df_test_france[
-    [
-        "ff",
-        "tc",
-        "u",
-        "temp_below_15",
-        "tc_ewm15",
-        "tc_ewm06",
-        "tc_ewm15_max24h",
-        "tc_ewm15_min24h",
-        "sin_time",
-        "cos_time",
-        "sin_dayofweek",
-        "cos_dayofweek",
-        "sin_dayofyear",
-        "cos_dayofyear",
-        "is_weekend",
-        "winter_hour",
-        "is_holiday",
-    ]
-].to_numpy(dtype="float32")
+feature_no_load = feature_cols.copy()
+feature_no_load.remove("Load")
+future_exog = df_test_france[feature_no_load].to_numpy(dtype="float32")
 
 predictions = iterative_forecast(model, last_seq, future_exog, device)
 print("Forecasts for the horizon:", predictions[:10], "...")
