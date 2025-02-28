@@ -5,7 +5,7 @@ import joblib
 import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
-# import os
+import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
@@ -13,7 +13,7 @@ MODEL_CREATE = True  # True pour créer un nouveau modèle, False pour le charge
 MODEL_PATH = (
     "models/model_MLP_20231010_123456.joblib"  # A mettre à jour avec la nouvelle path
 )
-FULL_TRAIN = False  # True: pred sur 2022, False: pred sur 2021 (validation)
+FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
 
 COLAB = False  # Si utilisation de google colab
 STANDARDIZATION_PER_ZONE = True
@@ -126,7 +126,11 @@ if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauv
     model.fit(X_train, y_train)
     if FULL_TRAIN:
         current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        joblib.dump(model, f"models/model_MLP_{current_time}.joblib")
+        models = "models"
+        if not os.path.exists(models):
+            os.makedirs(models)
+
+        joblib.dump(model, f"{models}/model_MLP_{current_time}.joblib")
 else:  # Soit on charge un ancien modèle
     model = joblib.load(MODEL_PATH)
 
