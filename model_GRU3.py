@@ -16,35 +16,6 @@ if torch.backends.mps.is_available():
     device = torch.device("mps")  # MacOS GPU
 print(device)
 # %%
-df.columns
-# %%
-# Feature selection, on drop ou non certaines features
-features_to_normalize = [
-    "ff",
-    "tc",
-    "u",
-    "tc_ewm15",
-    "tc_ewm06",
-    "tc_ewm15_max24h",
-    "tc_ewm15_min24h",
-]
-
-df = df.drop(columns=["is_ville", "is_reg", "is_pays"])
-
-if DROP_AUGUSTS_FLAGS:
-    df = df.drop(columns=["is_august", "is_july_or_august"])
-
-if DROP_PRECIPITATIONS:
-    df = df.drop(columns=["rr1"])
-else:
-    features_to_normalize.append("rr1")
-
-if DROP_PRESSION:
-    df = df.drop(columns=["pres"])
-else:
-    features_to_normalize.append("pres")
-
-# %%
 # On normalise les variables continues
 # On garde en liste les moyennes et std des Loads des différentes régions pour renormaliser les pred à la fin
 li_zones = df["zone"].unique().tolist()
@@ -61,15 +32,6 @@ for zone in li_zones:
     df.loc[df["zone"] == zone, "Load"] = (
         df.loc[df["zone"] == zone, "Load"] - df.loc[df["zone"] == zone, "Load"].mean()
     ) / df.loc[df["zone"] == zone, "Load"].std()
-
-
-# Standardization of the rest, per zone or globally
-for zone in li_zones:
-    for feature in features_to_normalize:
-        df.loc[df["zone"] == zone, feature] = (
-            df.loc[df["zone"] == zone, feature]
-            - df.loc[df["zone"] == zone, feature].mean()
-        ) / df.loc[df["zone"] == zone, feature].std()
 
 
 # Fonction à utilier plus tard pour rescale

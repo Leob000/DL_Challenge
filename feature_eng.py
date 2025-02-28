@@ -6,6 +6,11 @@ import holidays
 
 GRAPHS = False  # On affiche les graphs ou non
 
+STANDARDIZATION_PER_ZONE = True
+DROP_AUGUSTS_FLAGS = True
+DROP_PRECIPITATIONS = True
+DROP_PRESSION = True
+
 # %%
 df_geo = pd.read_parquet("data/geo_tweaked.parquet")
 df_meteo = pd.read_parquet("data/meteo_tweaked.parquet")
@@ -156,6 +161,43 @@ for col in li_bool:
     # print(df2[col].value_counts(dropna=False))
 
 # %%
-df.to_parquet("data/clean_data.parquet", engine="pyarrow")
+# Feature selection, on drop ou non certaines features, puis on normalise (sauf "Load")
+features_to_normalize = [
+    "ff",
+    "tc",
+    "u",
+    "tc_ewm15",
+    "tc_ewm06",
+    "tc_ewm15_max24h",
+    "tc_ewm15_min24h",
+]
+
+if DROP_AUGUSTS_FLAGS:
+    df = df.drop(columns=["is_august", "is_july_or_august"])
+
+if DROP_PRECIPITATIONS:
+    df = df.drop(columns=["rr1"])
+else:
+    features_to_normalize.append("rr1")
+
+if DROP_PRESSION:
+    df = df.drop(columns=["pres"])
+else:
+    features_to_normalize.append("pres")
+
+li_zones = df["zone"].unique().tolist()
+
+# Normalisation des variables, par zone ou non
+if STANDARDIZATION_PER_ZONE:
+    for zone in li_zones:
+        for feature in features_to_normalize:
+            df.loc[df["zone"] == zone, feature] = (
+                df.loc[df["zone"] == zone, feature]
+                - df.loc[df["zone"] == zone, feature].mean()
+            ) / df.loc[df["zone"] == zone, feature].std()
+else:
+    for feature in features_to_normalize:
+        df[feature] = (df[feature] - df[feature].mean()) / df[feature].std()
 
 # %%
+df.to_parquet("data/clean_data.parquet", engine="pyarrow")
