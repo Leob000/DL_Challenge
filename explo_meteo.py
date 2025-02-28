@@ -7,7 +7,7 @@ from scipy.spatial import distance
 import seaborn as sns
 
 #!%matplotlib inline
-GRAPHS = True  # On affiche les graphiques ou non
+GRAPHS = False  # On affiche les graphiques ou non
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")

@@ -6,7 +6,7 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-GRAPHS = True  # On affiche les graphiques ou non
+GRAPHS = False  # On affiche les graphiques ou non
 
 # %%
 df = pd.read_csv("data/train.csv", index_col="date")
