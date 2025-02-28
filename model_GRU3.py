@@ -8,13 +8,14 @@ import torch.optim as optim
 
 COLAB = False
 
-FULL_TRAIN = False
+FULL_TRAIN = True
 
 BATCH_SIZE = 128
-SEQ_LENGTH = 48 * 2  # e.g., use past 24 hours (48 time-steps at 30min intervals)
+SEQ_LENGTH = 48 * 3  # e.g., use past 24 hours (48 time-steps at 30min intervals)
 HIDDEN_SIZE = 64 * 2  # LSTM
 NUM_LAYERS = 7  # LSTM
-EPOCHS = 6
+EPOCHS = 1
+CLIP_GRAD = False
 
 feature_cols = [
     "Load",
@@ -85,10 +86,11 @@ if FULL_TRAIN:
     df_train = df[df.index < "2022"]
     df_test = df[df.index >= "2022"]
 else:
+    DATE_THRESHOLD = "2021"
     df_train = df[df.index < "2021"]
     df_test = df[(df.index >= "2021") & (df.index < "2022")]
-    df_train = df[df.index < "2021-10"]
-    df_test = df[(df.index >= "2021-10") & (df.index < "2022")]
+    df_train = df[df.index < DATE_THRESHOLD]
+    df_test = df[(df.index >= DATE_THRESHOLD) & (df.index < "2022")]
     df_test.loc[:, "Load"] = float("nan")  # On retire les y du test de validation
 # %%
 df_train_france = df_train.loc[(df_train["zone"] == "France")]
@@ -172,7 +174,8 @@ def train_model(model, dataloader, optimizer, device):
         # RMSE loss: sqrt(MSE)
         loss = nn.MSELoss()(pred, y)
         loss.backward()
-        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # TEST
+        if CLIP_GRAD:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # TEST
         optimizer.step()
         total_loss += loss.item() * x.size(0)
     return total_loss / len(dataloader.dataset)
@@ -195,12 +198,12 @@ def iterative_forecast(model, init_seq, future_exog, device):
     # We'll use a sliding window approach.
     seq = init_seq.clone().to(device)  # shape: (seq_length, input_size)
     # The number of features in the input vector:
-    input_size = seq.shape[1]
+    # input_size = seq.shape[1]
 
     # Assume that in the input vector, index 0 is "Load" and indices 1: are the exogenous features.
     for t in range(len(future_exog)):
         # Prepare input: add batch dimension
-        x_input = seq.unsqueeze(0)  # shape: (1, seq_length, input_size)
+        x_input = seq.unsqueeze(0).to(device)  # shape: (1, seq_length, input_size)
         with torch.no_grad():
             pred, _ = model(x_input)
         pred_value = pred.squeeze().item()
@@ -264,7 +267,8 @@ print(predictions_unscale)
 # %%
 true = (
     df.loc[
-        (df["zone"] == "France") & (df.index >= "2021") & (df.index < "2022"), "Load"
+        (df["zone"] == "France") & (df.index >= DATE_THRESHOLD) & (df.index < "2022"),
+        "Load",
     ]
     * std_france
     + mean_france
@@ -275,7 +279,8 @@ my_pred = np.array(predictions_unscale)
 # %%
 from sklearn.metrics import root_mean_squared_error
 
-root_mean_squared_error(true, my_pred)
+print(root_mean_squared_error(true, my_pred))
+print(root_mean_squared_error(true, my_pred - 4250))
 # %%
 import matplotlib.pyplot as plt
 
