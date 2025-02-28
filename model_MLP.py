@@ -77,7 +77,7 @@ if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauv
         hidden_layer_sizes=(100, 75, 50),
         alpha=0.001,
         verbose=True,
-        activation="logistic",
+        activation="relu",
         solver="adam",
         batch_size=200,
         # tol=0.00005,
