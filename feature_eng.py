@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import holidays
 
-OPTION_FULL_ANALYSIS = True
+GRAPHS = False  # On affiche les graphs ou non
 
 # %%
 df_geo = pd.read_parquet("data/geo_tweaked.parquet")
@@ -94,7 +94,7 @@ for zon in zones:
         df2.loc[df2["zone"] == zon, "tc_ewm15"].rolling("24h").min()
     )
 
-if OPTION_FULL_ANALYSIS:
+if GRAPHS:
     for i in ["tc", "tc_ewm15", "tc_ewm06", "tc_ewm15_max24h", "tc_ewm15_min24h"]:
         plt.plot(
             df2.loc[(df2["zone"] == "Paris") & (df2.index <= "2017-02-18"), i],
