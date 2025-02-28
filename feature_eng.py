@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import holidays
 
-OPTION_FULL_ANALYSIS = False
+OPTION_FULL_ANALYSIS = True
 
 # %%
 df_geo = pd.read_parquet("data/geo_tweaked.parquet")
@@ -95,16 +95,22 @@ for zon in zones:
     )
 
 if OPTION_FULL_ANALYSIS:
-    for i in ["tc", "tc_ewm15", "tc_ewm06"]:
+    for i in ["tc", "tc_ewm15", "tc_ewm06", "tc_ewm15_max24h", "tc_ewm15_min24h"]:
         plt.plot(
             df2.loc[(df2["zone"] == "Paris") & (df2.index <= "2017-02-18"), i],
             linewidth=1,
             alpha=0.5,
         )
     plt.show()
+    plt.scatter(
+        df2.loc[df2["zone"] == "Paris", "tc"],
+        df2.loc[df2["zone"] == "Paris", "Load"],
+        alpha=0.2,
+        s=7,
+    )
+    plt.show()
 
 df = df2.copy()
-
 # %%
 # Feature eng: Dates
 df2 = df.copy()
