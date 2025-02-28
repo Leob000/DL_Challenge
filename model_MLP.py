@@ -111,7 +111,6 @@ y_test = df_test["Load"].to_numpy(dtype="float32")
 # %%
 # Implémentation du modèle
 
-# err_train: 3621.2012976983906 err_test 5551.845151611335
 
 if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauvegarde
     model = MLPRegressor(
