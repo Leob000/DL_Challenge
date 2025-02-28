@@ -16,10 +16,6 @@ MODEL_PATH = (
 FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
 
 COLAB = False  # Si utilisation de google colab
-STANDARDIZATION_PER_ZONE = True
-DROP_AUGUSTS_FLAGS = True
-DROP_PRECIPITATIONS = True
-DROP_PRESSION = True
 
 if COLAB:
     from google.colab import drive  # type: ignore

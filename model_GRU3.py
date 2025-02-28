@@ -7,9 +7,7 @@ import pandas as pd
 import torch.optim as optim
 
 FULL_TRAIN = False
-DROP_AUGUSTS_FLAGS = True
-DROP_PRECIPITATIONS = True
-DROP_PRESSION = True
+
 # %%
 df = pd.read_parquet("data/clean_data.parquet")
 if torch.backends.mps.is_available():
