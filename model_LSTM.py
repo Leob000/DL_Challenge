@@ -9,15 +9,15 @@ import pandas as pd
 import torch.optim as optim
 
 COLAB = False
-UNE_ZONE = False  # On entraine juste pour la France
+UNE_ZONE = True  # On entraine juste pour la France
 
-FULL_TRAIN = True
+FULL_TRAIN = False
 
 BATCH_SIZE = 128
 SEQ_LENGTH = 48 * 2  # e.g., use past 24 hours (48 time-steps at 30min intervals)
 HIDDEN_SIZE = 64 * 2  # LSTM
 NUM_LAYERS = 7  # LSTM
-EPOCHS = 9
+EPOCHS = 8
 CLIP_GRAD = False
 
 feature_cols = [
@@ -76,14 +76,6 @@ for zone in li_zones:
     ) / df.loc[df["zone"] == zone, "Load"].std()
 
 
-# Fonction à utilier plus tard pour rescale
-def rescale(dff, col):
-    for zone, mean, std in li_load:
-        dff.loc[dff["zone"] == zone, col] = (
-            dff.loc[dff["zone"] == zone, col] * std + mean
-        )
-
-
 # %%
 # Séparation du dataset en train et test set
 if FULL_TRAIN:
@@ -96,11 +88,9 @@ else:
     df_train = df[df.index < DATE_THRESHOLD]
     df_test = df[(df.index >= DATE_THRESHOLD) & (df.index < "2022")]
     df_test.loc[:, "Load"] = float("nan")  # On retire les y du test de validation
+
+
 # %%
-if UNE_ZONE:  # Si on veut juste entraîner pour la zone "France"
-    li_load = li_load[0]
-
-
 class TimeSeriesDataset(Dataset):
     def __init__(self, df, seq_length, feature_cols, target_col):
         """
@@ -117,7 +107,7 @@ class TimeSeriesDataset(Dataset):
         self.seq_length = seq_length
 
     def __len__(self):
-        return len(self.data) - self.seq_length
+        return self.data.shape[0] - self.seq_length
 
     def __getitem__(self, idx):
         # x: sequence of shape (seq_length, n_features)
@@ -269,9 +259,8 @@ for zone, mean, std in li_load:
         plt.plot(true)
         plt.plot(my_pred)
         plt.show()
+    if UNE_ZONE:
+        break
 
-if not FULL_TRAIN:
+if (not FULL_TRAIN) and (not UNE_ZONE):
     print("err_validation totale:", err_validation)
-
-# %%
-results.to_csv("results.csv")
