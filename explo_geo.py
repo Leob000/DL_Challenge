@@ -1,5 +1,6 @@
 # %%
 import matplotlib.pyplot as plt
+import seaborn as sns
 import missingno as msno
 import pandas as pd
 #!%matplotlib inline
@@ -84,7 +85,11 @@ if OPTION_FULL_ANALYSIS:
 # %%
 # Corrélation étrange pour Nancy, Nice
 # if OPTION_FULL_ANALYSIS:
-df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+# df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+corr_matrix = df.corr().round(2)
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+plt.show()
 
 # %%
 # On enlève les mauvaises données pour Nancy
@@ -168,7 +173,10 @@ if OPTION_FULL_ANALYSIS:
 
 # %%
 # Corrélation semble bonne maintenant
-df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
+corr_matrix = df.corr().round(2)
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+plt.show()
 
 # %%
 # Seasonal plot for every year
