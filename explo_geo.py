@@ -6,8 +6,7 @@ import pandas as pd
 #!%matplotlib inline
 
 plt.rcParams["figure.figsize"] = [10, 5]
-OPTION_FULL_ANALYSIS = True  # Analyse complète ou non
-OPTION_NICE_SHIFT = True  # Mauvaises données "Nice" shiftées ou éliminées
+GRAPHS = True  # On affiche les graphiques ou non
 
 # %%
 df = pd.read_csv("data/train.csv", index_col="date")
@@ -60,7 +59,7 @@ cols = list(df.columns)
 
 # %%
 # Recherche valeurs abérante
-if OPTION_FULL_ANALYSIS:
+if GRAPHS:
     df[regions_france].boxplot(
         vert=False,
         fontsize=10,
@@ -73,7 +72,7 @@ if OPTION_FULL_ANALYSIS:
 
 # %%
 # Visualisation histogrammes
-if OPTION_FULL_ANALYSIS:
+if GRAPHS:
     df[villes].hist(
         bins=50,
     )
@@ -86,47 +85,42 @@ if OPTION_FULL_ANALYSIS:
 # Corrélation étrange pour Nancy, Nice
 # if OPTION_FULL_ANALYSIS:
 # df.corr().style.background_gradient(cmap="coolwarm").format(precision=2)
-corr_matrix = df.corr().round(2)
-plt.figure(figsize=(10, 8))
-sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-plt.show()
+if GRAPHS:
+    corr_matrix = df.corr().round(2)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+    plt.show()
 
 # %%
 # On enlève les mauvaises données pour Nancy
-df["Nancy"].plot()
-plt.axvline(pd.Timestamp("2020-01-01"), color="r", linestyle="--")
+if GRAPHS:
+    df["Nancy"].plot()
+    plt.axvline(pd.Timestamp("2020-01-01"), color="r", linestyle="--")
 df = df.assign(Nancy=lambda x: x["Nancy"].where(x.index >= "2020-01-01", float("nan")))
-df["Nancy"].plot()
+if GRAPHS:
+    df["Nancy"].plot()
 # %%
 # On traite les mauvaises données de Nice
-if OPTION_NICE_SHIFT:  # Shifting à la main des mauvaises données
+if GRAPHS:
     df["Nice"].plot()
     plt.axvline(pd.Timestamp("2021-08-25"), color="r", linestyle="--")
     plt.show()
-    dftest = df.copy()
-    # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
-    # plt.show()
-    dftest = (
-        df.assign(
-            Nice=lambda x: x["Nice"].where(
-                x.index < "2021-08-25 09:30:00", x["Nice"] + 150
-            )
-        )
-        .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
-        .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
+dftest = df.copy()
+# dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
+# plt.show()
+dftest = (
+    df.assign(
+        Nice=lambda x: x["Nice"].where(x.index < "2021-08-25 09:30:00", x["Nice"] + 150)
     )
-    # dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
-    # plt.show()
-    df = dftest.copy()
+    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-08-30", x["Nice"] - 150))
+    .assign(Nice=lambda x: x["Nice"].where(x.index < "2021-09-03", x["Nice"] + 150))
+)
+# dftest.loc[dftest.index >= "2021-08", "Nice"].plot()
+# plt.show()
+df = dftest.copy()
+if GRAPHS:
     df["Nice"].plot()
     plt.show()
-# else:  # Elimination de ces données
-#     df["Nice"].plot()
-#     plt.axvline(pd.Timestamp("2021-08-01"), color="r", linestyle="--")
-#     df = df.assign(
-#         Nice=lambda x: x["Nice"].where(x.index <= "2021-08-01", float("nan"))
-#     )
-#     df["Nice"].plot()
 # %%
 # Beaucoups de valeurs aberrantes pour les villes,
 # on les cherche une par une puis les élimine
@@ -144,7 +138,8 @@ ville_seuil = [
     ("Toulouse", 230),
 ]
 laville = "Nice"
-df[laville].plot()
+if GRAPHS:
+    df[laville].plot()
 
 df = df.pipe(
     lambda x: x.assign(
@@ -154,33 +149,37 @@ df = df.pipe(
         }
     )
 )
-plt.axhline(90, color="r")
-plt.show()
-df[laville].plot()
+if GRAPHS:
+    plt.axhline(90, color="r")
+    plt.show()
+    df[laville].plot()
 # %%
 # Correction de certains outliers de Nice
-df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
-plt.axhline(510)
+if GRAPHS:
+    df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
+    plt.axhline(510)
 df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"] = df.loc[
     (df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"
 ].where(df["Nice"] <= 510, float("nan"))
-df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
+if GRAPHS:
+    df.loc[(df.index >= "2021-04") & (df.index <= "2021-11"), "Nice"].plot()
 
 # %%
 # Le boxplot ne montre plus de valeurs abérantes
-if OPTION_FULL_ANALYSIS:
+if GRAPHS:
     df[villes].boxplot(vert=False, fontsize=10, grid=False)
 
 # %%
 # Corrélation semble bonne maintenant
-corr_matrix = df.corr().round(2)
-plt.figure(figsize=(10, 8))
-sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-plt.show()
+if GRAPHS:
+    corr_matrix = df.corr().round(2)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr_matrix, annot=False, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+    plt.show()
 
 # %%
 # Seasonal plot for every year
-if OPTION_FULL_ANALYSIS:
+if GRAPHS:
     year_min = df.index.min().year
     year_max = df.index.max().year
     for year in range(year_min, year_max + 1):
@@ -195,18 +194,17 @@ if OPTION_FULL_ANALYSIS:
 # %%
 # 2 types de valeurs manquantes, soit globalement communes à toutes les villes
 # soit manque du début ~2017 différent pour chaque ville
-msno.matrix(df)
+if GRAPHS:
+    msno.matrix(df)
+    plt.show()
 # %%
 # On interpole les NaN mineurs
 df = df.interpolate(method="time", limit_area="inside")
-msno.matrix(df)
+if GRAPHS:
+    msno.matrix(df)
+    plt.show()
 
 # Les NaN majeurs (valeurs manquantes 2017 pour les villes, <2020 pour Nancy) ne sont pas interpolés, on trainera juste ces zones sans ces valeurs
-
-# for ville in villes:
-#     print(ville)
-#     df[ville].plot(linewidth=1, alpha=0.5)
-#     plt.show()
 
 # %%
 # Ajout de l'index 2022 à la df
