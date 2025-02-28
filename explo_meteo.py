@@ -7,7 +7,7 @@ from scipy.spatial import distance
 import seaborn as sns
 
 #!%matplotlib inline
-FULL_ANALYSIS = True
+GRAPHS = True  # On affiche les graphiques ou non
 
 # %%
 df = pd.read_parquet("data/meteo.parquet")
@@ -41,7 +41,7 @@ villes_loc = pd.read_csv("data/villes_loc.csv")
 tuple_villes = (villes_loc["Longitude"], villes_loc["Latitude"], villes_loc["Ville"])
 
 # Voir la fonction pour afficher sur la carte dans utils.py
-if FULL_ANALYSIS:
+if GRAPHS:
     utils.plot_france_map(tuple_stations, tuple_villes)
 
 # %%
@@ -68,13 +68,12 @@ closest_stations = {
 grenoble_distances = [d for d in distances if d[0] == "Grenoble"]
 closest_stations["Grenoble"] = sorted(grenoble_distances, key=lambda x: x[2])[:3]
 
-if FULL_ANALYSIS:
-    for ville, station_info in closest_stations.items():
-        if ville == "Grenoble":
-            for station in station_info:
-                print(ville, ":", station[3])
-        else:
-            print(ville, ":", station_info[3])
+for ville, station_info in closest_stations.items():
+    if ville == "Grenoble":
+        for station in station_info:
+            print(ville, ":", station[3])
+    else:
+        print(ville, ":", station_info[3])
 
 # %%
 # On met nbas en format numérique
@@ -115,7 +114,7 @@ df.isna().mean().sort_values()
 # %%
 # On étudie comment sont répartis les NaN
 # On remarque sur la matrice de corrélation des variables choisies qu'elles ne semblent pas très corrélées, ce qui est plutôt bon, elles apportent de l'information différente
-if FULL_ANALYSIS:
+if GRAPHS:
     msno.matrix(df.loc[:, df.isna().mean() > 0])
     plt.show()
     # print(df[cols_essential].corr())
@@ -125,11 +124,11 @@ if FULL_ANALYSIS:
     plt.show()
 # %%
 # Vent, temp et humidité par département
-if FULL_ANALYSIS:
+if GRAPHS:
     print(df.groupby(["nom_reg", "nom_dept"])[cols_essential].mean())
 # %%
 # Nombre de NaN par variable, par département
-if FULL_ANALYSIS:
+if GRAPHS:
     print(
         df.groupby(["nom_reg", "nom_dept"])[cols_essential].apply(
             lambda x: x.isna().sum()
@@ -140,7 +139,7 @@ if FULL_ANALYSIS:
 # Bcp de NaN pour le Var
 # On l'élimine car on a pas les valeurs pour le test set
 depts = df["nom_dept"].unique().tolist()
-if FULL_ANALYSIS:
+if GRAPHS:
     for dept in depts:
         print(dept)
         msno.matrix(df[df["nom_dept"] == dept])
@@ -237,13 +236,13 @@ df2["is_ville"].value_counts(dropna=False)
 li_is = ["is_pays", "is_reg", "is_ville"]
 df["is_pays"] = df["is_pays"].fillna(0)
 df["is_reg"] = df["is_reg"].fillna(0)
-if FULL_ANALYSIS:
+if GRAPHS:
     for i in li_is:
         print(df[i].value_counts(dropna=False))
 
 df = df[(df["is_pays"] == 1) | (df["is_reg"] == 1) | (df["is_ville"] == 1)]
 
-if FULL_ANALYSIS:
+if GRAPHS:
     for i in li_is:
         print(df.loc[df[i] == 1]["zone"].value_counts(dropna=False))
 
