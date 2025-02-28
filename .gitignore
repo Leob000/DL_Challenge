@@ -5,6 +5,7 @@ test.py
 TODO.md
 old_model.py
 models/
+test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
