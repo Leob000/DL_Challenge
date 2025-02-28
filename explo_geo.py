@@ -149,7 +149,7 @@ df = df.pipe(
         }
     )
 )
-plt.axhline(90)
+plt.axhline(90, color="r")
 plt.show()
 df[laville].plot()
 # %%
