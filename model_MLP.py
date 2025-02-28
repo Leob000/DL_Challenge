@@ -70,14 +70,15 @@ y_test = df_test["Load"].to_numpy(dtype="float32")
 
 # %%
 # Implémentation du modèle
+# 7568.59 logistic alpha 0.0008
 
 
 if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauvegarde
     model = MLPRegressor(
         hidden_layer_sizes=(100, 75, 50),
-        alpha=0.001,
+        alpha=0.0008,
         verbose=True,
-        activation="relu",
+        activation="logistic",
         solver="adam",
         batch_size=200,
         # tol=0.00005,
@@ -217,5 +218,6 @@ if FULL_TRAIN:
     )
     result.to_csv("data/pred.csv")
 
+# Reshift des données de Nice sur un autre fichier, non présent ici
 
 # %%
