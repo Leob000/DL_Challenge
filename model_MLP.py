@@ -14,6 +14,7 @@ MODEL_TO_LOAD_PATH = (
     "models/model_MLP_20231010_123456.joblib"  # A mettre à jour avec la nouvelle path
 )
 FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
+UNSHIFT_NICE = True
 
 COLAB = False  # Si utilisation de google colab
 
@@ -70,7 +71,7 @@ y_test = df_test["Load"].to_numpy(dtype="float32")
 
 # %%
 # Implémentation du modèle
-# 7568.59 logistic alpha 0.0008
+# 7457.58 public score avec ces paramètres
 
 
 if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauvegarde
@@ -216,6 +217,10 @@ if FULL_TRAIN:
     result = (
         df_temp.groupby("date")[desired_order].sum().reset_index().set_index("date")
     )
+    if UNSHIFT_NICE:
+        result["pred_Métropole Nice Côte d'Azur"] = (
+            result["pred_Métropole Nice Côte d'Azur"] - 150
+        )
     result.to_csv("data/pred.csv")
 
 # Reshift des données de Nice sur un autre fichier, non présent ici
