@@ -20,6 +20,8 @@ NUM_LAYERS = 7  # LSTM
 EPOCHS = 8
 CLIP_GRAD = False
 
+plt.rcParams["figure.figsize"] = [10, 5]
+
 feature_cols = [
     "Load",
     "tc",
@@ -256,8 +258,8 @@ for zone, mean, std in li_load:
         err_validation_zone = root_mean_squared_error(true, my_pred)
         print("err_validation pour", zone, ":", err_validation_zone)
         err_validation += err_validation_zone
-        plt.plot(true)
-        plt.plot(my_pred)
+        plt.plot(true, linewidth=1, alpha=0.8)
+        plt.plot(my_pred, linewidth=1, alpha=0.8)
         plt.show()
     if UNE_ZONE:
         break
