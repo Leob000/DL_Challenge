@@ -1,12 +1,21 @@
 # %%
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import root_mean_squared_error
+import joblib
+import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 # import os
 
 plt.rcParams["figure.figsize"] = [10, 5]
 
+MODEL_CREATE = True  # True pour créer un nouveau modèle, False pour le charger
+MODEL_PATH = (
+    "models/model_MLP_20231010_123456.joblib"  # A mettre à jour avec la nouvelle path
+)
+FULL_TRAIN = False  # True: pred sur 2022, False: pred sur 2021 (validation)
+
 COLAB = False  # Si utilisation de google colab
-FULL_TRAIN = True  # True: pred sur 2022, False: pred sur 2021 (validation)
 STANDARDIZATION_PER_ZONE = True
 DROP_AUGUSTS_FLAGS = True
 DROP_PRECIPITATIONS = True
@@ -77,7 +86,7 @@ else:
         df[feature] = (df[feature] - df[feature].mean()) / df[feature].std()
 
 
-# Fonction à utilier plus tard pour rescale
+# Fonction à utilier plus tard pour rescale le Load
 def rescale(dff, col):
     for zone, mean, std in li_load:
         dff.loc[dff[zone] == 1, col] = dff.loc[dff[zone] == 1, col] * std + mean
@@ -100,54 +109,27 @@ y_test = df_test["Load"].to_numpy(dtype="float32")
 
 
 # %%
-# Importation du modèle
-from sklearn.neural_network import MLPRegressor
-from sklearn.metrics import root_mean_squared_error
+# Implémentation du modèle
 
-# Seed 42 sauf si précisé
-# VALIDATION TRAIN
-# MLP (50)
-# err_train: 4970.189566458095 err_val: 5305.83536908326
-# MLP (100,75,50) alpha=0.0001 12m
-# err_train: 3520.0179453667292 err_val: 5566.213886271534
-# MLP (100,75,50) alpha=0.0005 12m
-# err_train: 3562.9267325270466 err_val: 5432.463928511991
-# MLP (100,75,50) alpha=0.001 17m colab ******************************** same mode full train
-# err_train: 3572.5110659410075 err_val: 5384.728522402602
-# MLP (150,75,50) alpha=0.001 11m
-# err_train: 3434.437815640683 err_val: 5599.2871695679
-# MLP (160,80,70,50) tol=0.00005 alpha=0.001 36m
-# err_train: 3266.782885785861 err_val: 5571.2599459496205
-### Ajout rr1
-# MLP (100,75,50) alpha=0.001 3m ********************************
-# err_train: 3253.215070418089 err_test 4751.342492175332
-# (one go) avec global norm err_train: 3200.0788533516843 err_test 4998.127239935056
-### Ajout August, August-July flags
-# err_train: 3162.0374756982874 err_test 4905.985489564879
-# MLP (100, 75, 50, 50) alpha=0.001
-# err_train: 3321.7738784810754 err_test 5601.2457404252
+# err_train: 3621.2012976983906 err_test 5551.845151611335
 
-# FULL TRAIN
-# MLP (100,75,50), alpha=0.001 15m ******************************* Best
-# err_train: 3790.3653802664085 PUBLIC 7800.42
-# Idem avec rr1, august-july flags
-# err_train: 3727.341889244235 PUBLIC 7862.66
-# Idem sans august_july flags
-# err_train: 3757.4073814148524 PUBLIC 7983.36
-# (100 x 6)
-# err_train: 3442.833907457593 PUBLIC 8000
-
-model = MLPRegressor(
-    hidden_layer_sizes=(100, 75, 50),
-    # tol=0.00005,
-    alpha=0.001,
-    verbose=True,
-    random_state=42,
-)
-# %%
-# On train le modèle
-model.fit(X_train, y_train)
-# os.system('say "Training complete"')
+if MODEL_CREATE:  # Soit on créé un nouveau modèle, on l'entraîne et le sauvegarde
+    model = MLPRegressor(
+        hidden_layer_sizes=(100, 75, 50),
+        alpha=0.001,
+        verbose=True,
+        activation="relu",
+        solver="adam",
+        batch_size=200,
+        # tol=0.00005,
+        random_state=42,
+    )
+    model.fit(X_train, y_train)
+    if FULL_TRAIN:
+        current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        joblib.dump(model, f"models/model_MLP_{current_time}.joblib")
+else:  # Soit on charge un ancien modèle
+    model = joblib.load(MODEL_PATH)
 
 
 # %%
@@ -272,7 +254,5 @@ if FULL_TRAIN:
     )
     result.to_csv("data/pred.csv")
 
-# %%
-# import joblib
-# joblib.dump(model, "models/MLP(100,75,50),alpha=0_001).joblib")
+
 # %%
